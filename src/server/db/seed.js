@@ -41,6 +41,12 @@ export async function seed(db) {
     `);
     console.log("Inserted race checkpoints");
 
+
+    await db.run("INSERT INTO participant DEFAULT VALUES;");
+    await db.run("INSERT INTO participant DEFAULT VALUES;");
+    await db.run("INSERT INTO participant DEFAULT VALUES;");
+    console.log("Inserted into participant");
+
     console.log("Database seeding complete");
   } catch (error) {
     console.error("Error seeding database:", error);
