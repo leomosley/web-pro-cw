@@ -1,5 +1,6 @@
 // Import the framework and instantiate it
 import Fastify from "fastify";
+import { db } from "./db/index.js";
 
 const PORT = 8080;
 
