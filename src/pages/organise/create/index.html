@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create race</title>
+</head>
+
+<body>
+  <div style="display: flex; flex-direction: column;">
+    <label for="race-name">Race Name</label>
+    <input name="race-name" type="text" />
+
+    <label for="race-date">Date</label>
+    <input name="race-date" type="text" />
+
+    <label for="check-in-open-time">Check in time</label>
+    <input name="check-in-open-time" type="text" />
+
+    <label for="race-start-time">Race start time</label>
+    <input name="race-start-time" type="text" />
+
+    <button>Submit</button>
+
+  </div>
+</body>
+<script>
+  const button = document.querySelector("button");
+
+  button.addEventListener("click", async (e) => {
+    const response = await fetch("/api/race", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        location_id: 1,
+        race_name: document.querySelector("input[name='race-name']").value,
+        race_date: document.querySelector("input[name='race-date']").value,
+        check_in_open_time: document.querySelector("input[name='check-in-open-time']").value,
+        race_start_time: document.querySelector("input[name='race-start-time']").value
+      })
+    });
+
+    console.log(response);
+  });
+</script>
+
+</html>
