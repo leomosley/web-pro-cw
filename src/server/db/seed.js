@@ -1,7 +1,24 @@
 import { Database } from "sqlite";
+import { db } from "./index.js";
+
+export async function isDatabaseEmpty(db) {
+  if (!(db instanceof Database)) throw new Error("`db` must be an instance of Database.");
+
+  const tables = ["location", "race", "checkpoint", "race_checkpoint"];
+
+  for (const table of tables) {
+    const result = await db.get(`SELECT COUNT(*) AS count FROM ${table};`);
+    if (result.count > 0) return false;
+  }
+
+  return true;
+}
 
 export async function seed(db) {
   if (!(db instanceof Database)) throw new Error("`db` must be an instance of Database.");
+
+  const databaseEmpty = await isDatabaseEmpty(db);
+  if (!databaseEmpty) throw new Error("Database already contains values, skipping seed process.");
 
   try {
     console.log("Seeding database...");
@@ -51,4 +68,13 @@ export async function seed(db) {
   } catch (error) {
     console.error("Error seeding database:", error);
   }
+}
+
+async function main() {
+  seed(db);
+}
+
+// Optional: Run only if executed directly
+if (import.meta.url === new URL(import.meta.url, import.meta.url).href) {
+  main();
 }
