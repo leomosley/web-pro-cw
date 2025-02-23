@@ -59,9 +59,9 @@ export async function seed(db) {
     console.log("Inserted race checkpoints");
 
 
-    await db.run("INSERT INTO participant DEFAULT VALUES;");
-    await db.run("INSERT INTO participant DEFAULT VALUES;");
-    await db.run("INSERT INTO participant DEFAULT VALUES;");
+    await db.run("INSERT INTO participant (participant_id) VALUES ('P1241');");
+    await db.run("INSERT INTO participant (participant_id) VALUES ('P1214');");
+    await db.run("INSERT INTO participant (participant_id) VALUES ('P1511');");
     console.log("Inserted into participant");
 
     console.log("Database seeding complete");

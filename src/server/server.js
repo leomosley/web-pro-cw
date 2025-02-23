@@ -3,6 +3,7 @@ import Fastify from "fastify";
 import { db } from "./db/index.js";
 import path from 'path';
 import fs from 'fs/promises';
+import { generateRandomId } from "../lib/utils.js";
 
 const PORT = 8080;
 
@@ -13,6 +14,8 @@ const app = Fastify({
 /* 
   Page Routes
 */
+
+// Organise routes
 app.get("/", async (request, reply) => {
   const pagesPath = path.join("src", "pages");
   const file = await fs.readFile(path.join(pagesPath, "index.html"), "utf-8");
@@ -54,6 +57,30 @@ app.get("/organise/:id", async (request, reply) => {
 
   reply.type('text/html').send(file);
 });
+
+// Participant routes
+app.get("/participant", async (request, reply) => {
+  const pagesPath = path.join("src", "pages", "participant");
+  const file = await fs.readFile(path.join(pagesPath, "index.html"), "utf-8");
+
+  reply.type('text/html').send(file);
+});
+
+app.get("/participant/:id", async (request, reply) => {
+  const { id } = request.params;
+
+  const response = await db.get("SELECT * FROM participant WHERE participant_id=?", id);
+
+  if (!response) throw new Error("Participant doesnt exist");
+
+  const pagesPath = path.join("src", "pages", "participant", "[id]");
+  let file = await fs.readFile(path.join(pagesPath, "index.html"), "utf-8");
+
+  file = file.replace(/{{id}}/g, id);
+
+  reply.type('text/html').send(file);
+});
+
 
 
 /* 
@@ -157,7 +184,17 @@ app.get("/api/participant", async (request, reply) => {
 });
 
 app.post("/api/participant", async (request, reply) => {
-  return await db.run("INSERT INTO participant DEFAULT VALUES;");
+  while (true) {
+    const id = generateRandomId();
+
+    const exists = await db.get("SELECT * FROM participant WHERE participant_id=?;", id);
+
+    if (!exists) {
+      await db.run("INSERT INTO participant (participant_id) VALUES (?);", id);
+
+      return { id };
+    }
+  }
 });
 
 app.delete("/api/particpant/:id", async (request, reply) => {
