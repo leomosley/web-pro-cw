@@ -1,4 +1,5 @@
 import { db } from "../../db/index.js";
+import { generateRandomId } from "../../../lib/utils.js";
 
 export const participantRoutes = [
   {
@@ -7,6 +8,25 @@ export const participantRoutes = [
     handler: async (request, reply) => {
       return await db.all("SELECT * FROM participant;");
     },
+  },
+  {
+    method: "GET",
+    url: "/api/participant/:id",
+    handler: async (request, reply) => {
+      const { id } = request.params;
+      const response = db.all(
+        `SELECT *
+         FROM 
+          participant AS p
+          JOIN race_participant AS rp USING (participant_id)
+        WHERE p.participant_id=?;`, id);
+
+      if (!response) throw new Error("Participant doesnt exist");
+
+      return response;
+
+    },
+    requiredParams: ["id"],
   },
   {
     method: "POST",

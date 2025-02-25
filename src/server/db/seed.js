@@ -34,7 +34,8 @@ export async function seed(db) {
     await db.run(`
       INSERT INTO race (location_id, race_name, race_date, check_in_open_time, race_start_time)
       VALUES
-        (1, 'Pub to Pub', '2025-06-10', '07:00', '08:00');
+        (1, 'Pub to Pub', '2025-06-10', '07:00', '08:00'),
+        (1, 'Pier to Pier', '2025-06-10', '07:00', '08:00');
     `);
     console.log("Inserted races");
 
@@ -54,7 +55,8 @@ export async function seed(db) {
     await db.run(`
       INSERT INTO race_checkpoint (race_id, checkpoint_id)
       VALUES
-      (1, 1), (1, 2), (1, 3), (1, 4), (1, 5);
+      (1, 1), (1, 2), (1, 3), (1, 4), (1, 5),
+      (2, 1), (2, 2), (2, 3), (2, 4), (2, 5);
     `);
     console.log("Inserted race checkpoints");
 
@@ -62,6 +64,12 @@ export async function seed(db) {
     await db.run("INSERT INTO participant (participant_id) VALUES ('P1241');");
     await db.run("INSERT INTO participant (participant_id) VALUES ('P1214');");
     await db.run("INSERT INTO participant (participant_id) VALUES ('P1511');");
+
+    await db.run("INSERT INTO race_participant (race_id, participant_id, checked_in) VALUES (1, 'P1241', FALSE);");
+    await db.run("INSERT INTO race_participant (race_id, participant_id, checked_in) VALUES (2, 'P1241', FALSE);");
+    await db.run("INSERT INTO race_participant (race_id, participant_id, checked_in) VALUES (1, 'P1214', FALSE);");
+    await db.run("INSERT INTO race_participant (race_id, participant_id, checked_in) VALUES (2, 'P1214', FALSE);");
+
     console.log("Inserted into participant");
 
     console.log("Database seeding complete");

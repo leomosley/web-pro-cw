@@ -1,10 +1,3 @@
-export function toBinaryString(string) {
-  return string.split("")
-    .map(char => char.charCodeAt(0).toString(2).padStart(8, '0'))
-    .join(" ");
-}
-
-
 export function generateRandomId() {
   // Generate a random uppercase letter (A-Z)
   const randomChar = String.fromCharCode(Math.floor(Math.random() * 26) + 65);

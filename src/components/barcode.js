@@ -1,4 +1,8 @@
-import { toBinaryString } from "../../lib/utils.js";
+export function toBinaryString(string) {
+  return string.split("")
+    .map(char => char.charCodeAt(0).toString(2).padStart(8, '0'))
+    .join(" ");
+}
 
 export class Barcode extends HTMLElement {
   constructor() {
@@ -36,4 +40,4 @@ export class Barcode extends HTMLElement {
   }
 }
 
-customElements.define("barcode", Barcode);
+customElements.define("participant-barcode", Barcode);

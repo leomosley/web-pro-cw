@@ -15,8 +15,7 @@ export const raceRoutes = [
       const { location_id, race_name, race_date, check_in_open_time, race_start_time } = request.body;
 
       const response = await db.run(
-        `INSERT INTO race (location_id, race_name, race_date, check_in_open_time, race_start_time) 
-      VALUES 
+        `INSERT INTO race (location_id, race_name, race_date, check_in_open_time, race_start_time) VALUES 
         (?, ?, ?, ?, ?);`
         , [location_id, race_name, race_date, check_in_open_time, race_start_time]);
 
@@ -49,6 +48,25 @@ export const raceRoutes = [
 
     },
     requiredParams: ["id"]
+  },
+  {
+    method: "PATCH",
+    url: "/api/race/:id/check-in",
+    handler: async (request, reply) => {
+      const { id } = request.params;
+      const { participant_id } = request.body;
+
+      const response = await db.run(`
+        UPDATE race_participant
+        SET checked_in = TRUE
+        WHERE race_id = ? AND participant_id = ?;
+        `, [id, participant_id]);
+
+      if (!response) throw new Error("Not found");
+
+      return response;
+    },
+    requiredParams: ["id", "participant_id"]
   },
   {
     method: "PATCH",
