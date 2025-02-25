@@ -1,29 +1,13 @@
 import { Database } from "sqlite";
 import { db } from "./index.js";
 
-export async function isDatabaseEmpty(db) {
-  if (!(db instanceof Database)) throw new Error("`db` must be an instance of Database.");
-
-  const tables = ["location", "race", "checkpoint", "race_checkpoint"];
-
-  for (const table of tables) {
-    const result = await db.get(`SELECT COUNT(*) AS count FROM ${table};`);
-    if (result.count > 0) return false;
-  }
-
-  return true;
-}
-
 export async function seed(db) {
   if (!(db instanceof Database)) throw new Error("`db` must be an instance of Database.");
-
-  const databaseEmpty = await isDatabaseEmpty(db);
-  if (!databaseEmpty) throw new Error("Database already contains values, skipping seed process.");
 
   try {
     console.log("Seeding database...");
 
-    const locationResult = await db.run(`
+    await db.run(`
       INSERT INTO location (address_line_1, address_line_2, city, postcode)
       VALUES 
         ('Gravel Hill', NULL, 'Horndean', 'PO8 0QE');
