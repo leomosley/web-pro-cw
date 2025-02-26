@@ -1,7 +1,7 @@
 class NavBar extends HTMLElement {
   constructor() {
     super();
-    this.attachShadow({ mode: "open" });
+    this.attachShadow({ mode: 'open' });
   }
 
   connectedCallback() {
@@ -10,9 +10,9 @@ class NavBar extends HTMLElement {
 
   render() {
     const navItems = [
-      { label: "Home", href: "/" },
-      { label: "About", href: "/about" },
-      { label: "Contact", href: "/contact" },
+      { label: 'Home', href: '/' },
+      { label: 'About', href: '/about' },
+      { label: 'Contact', href: '/contact' },
     ];
 
     this.shadowRoot.innerHTML = `
@@ -23,12 +23,12 @@ class NavBar extends HTMLElement {
               <a href="${item.href}" target="_self">
                 ${item.label}
               </a>
-            `
+            `,
         )
-        .join("")}
+        .join('')}
       </nav>
     `;
   }
 }
 
-customElements.define("nav-bar", NavBar);
+customElements.define('nav-bar', NavBar);

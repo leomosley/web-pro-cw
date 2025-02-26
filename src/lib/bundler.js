@@ -1,5 +1,5 @@
-import path from "path";
-import { readFile } from "fs/promises";
+import path from 'path';
+import { readFile } from 'fs/promises';
 
 export function getScripts(html) {
   const regex = /<script\b[^>]*\bsrc=["']([^"']+)["'][^>]*><\/script>/gi;
@@ -24,8 +24,8 @@ export async function bundle(file) {
   const baseDir = path.dirname(file); // Get the directory of the HTML file
 
   for (const scriptPath of scripts) {
-    let absolutePath = path.resolve(baseDir, scriptPath); // Resolve relative to the HTML file
-    let scriptContent = await readFile(absolutePath, 'utf-8');
+    const absolutePath = path.resolve(baseDir, scriptPath); // Resolve relative to the HTML file
+    const scriptContent = await readFile(absolutePath, 'utf-8');
 
     bundledScripts += `\n// ${scriptPath}\n${scriptContent}\n`;
   }

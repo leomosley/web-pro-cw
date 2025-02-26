@@ -1,13 +1,13 @@
 function toBinaryString(string) {
-  return string.split("")
+  return string.split('')
     .map(char => char.charCodeAt(0).toString(2).padStart(8, '0'))
-    .join(" ");
+    .join(' ');
 }
 
 class Barcode extends HTMLElement {
   constructor() {
     super();
-    this.canvas = document.createElement("canvas");
+    this.canvas = document.createElement('canvas');
   }
 
   connectedCallback() {
@@ -15,14 +15,14 @@ class Barcode extends HTMLElement {
   }
 
   render() {
-    const value = this.getAttribute("value"); // Get the barcode value from an attribute
+    const value = this.getAttribute('value'); // Get the barcode value from an attribute
     if (!value) {
-      console.error("No value attribute provided for barcode.");
+      console.error('No value attribute provided for barcode.');
       return;
     }
 
     const binaryString = toBinaryString(value); // Convert value to binary string
-    const ctx = this.canvas.getContext("2d");
+    const ctx = this.canvas.getContext('2d');
     const barWidth = 2; // Width of each barcode bar
     const height = 100; // Height of the barcode
 
@@ -32,7 +32,7 @@ class Barcode extends HTMLElement {
 
     // Draw the barcode
     for (let i = 0; i < binaryString.length; i++) {
-      ctx.fillStyle = binaryString[i] === "1" ? "black" : "white"; // Set bar color
+      ctx.fillStyle = binaryString[i] === '1' ? 'black' : 'white'; // Set bar color
       ctx.fillRect(i * barWidth, 0, barWidth, height); // Draw the bar
     }
 
@@ -40,4 +40,4 @@ class Barcode extends HTMLElement {
   }
 }
 
-customElements.define("participant-barcode", Barcode);
+customElements.define('participant-barcode', Barcode);

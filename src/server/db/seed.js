@@ -1,18 +1,18 @@
-import { Database } from "sqlite";
-import { db } from "./index.js";
+import { Database } from 'sqlite';
+import { db } from './index.js';
 
 export async function seed(db) {
-  if (!(db instanceof Database)) throw new Error("`db` must be an instance of Database.");
+  if (!(db instanceof Database)) throw new Error('`db` must be an instance of Database.');
 
   try {
-    console.log("Seeding database...");
+    console.log('Seeding database...');
 
     await db.run(`
       INSERT INTO location (address_line_1, address_line_2, city, postcode)
       VALUES 
         ('Gravel Hill', NULL, 'Horndean', 'PO8 0QE');
     `);
-    console.log("Inserted locations");
+    console.log('Inserted locations');
 
     // Insert into race
     await db.run(`
@@ -21,7 +21,7 @@ export async function seed(db) {
         (1, 'Pub to Pub', '2025-06-10', '07:00', '08:00'),
         (1, 'Pier to Pier', '2025-06-10', '07:00', '08:00');
     `);
-    console.log("Inserted races");
+    console.log('Inserted races');
 
     // Insert into checkpoint
     await db.run(`
@@ -33,7 +33,7 @@ export async function seed(db) {
       (4, 'Checkpoint C'),
       (5, 'Finish Line');
     `);
-    console.log("Inserted checkpoints");
+    console.log('Inserted checkpoints');
 
     // Insert into race_checkpoint
     await db.run(`
@@ -42,7 +42,7 @@ export async function seed(db) {
       (1, 1), (1, 2), (1, 3), (1, 4), (1, 5),
       (2, 1), (2, 2), (2, 3), (2, 4), (2, 5);
     `);
-    console.log("Inserted race checkpoints");
+    console.log('Inserted race checkpoints');
 
 
     await db.run("INSERT INTO participant (participant_id) VALUES ('P1241');");
@@ -54,16 +54,16 @@ export async function seed(db) {
     await db.run("INSERT INTO race_participant (race_id, participant_id, checked_in) VALUES (1, 'P1214', FALSE);");
     await db.run("INSERT INTO race_participant (race_id, participant_id, checked_in) VALUES (2, 'P1214', FALSE);");
 
-    console.log("Inserted into participant");
+    console.log('Inserted into participant');
 
-    console.log("Database seeding complete");
+    console.log('Database seeding complete');
   } catch (error) {
-    console.error("Error seeding database:", error);
+    console.error('Error seeding database:', error);
   }
 }
 
 async function main() {
-  seed(db);
+  await seed(db);
 }
 
 // Optional: Run only if executed directly
