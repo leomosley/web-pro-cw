@@ -10,7 +10,8 @@
     "setup": "node src/server/db/seed.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "prepare": "husky"
   },
   "keywords": [],
   "author": "",
@@ -23,7 +24,8 @@
   },
   "devDependencies": {
     "eslint": "^8.57.1",
-    "eslint-config-portsoc": "^1.0.1"
+    "eslint-config-portsoc": "^1.0.1",
+    "husky": "^9.1.7"
   },
   "eslintConfig": {
     "extends": "portsoc",

@@ -17,7 +17,7 @@ const app = Fastify({
   logger: true,
 });
 
-// Register static files to be served from `public` 
+// Register static files to be served from `public`
 app.register(fastifyStatic, {
   root: path.join(process.cwd(), 'src/client'),
   prefix: '/public/',
