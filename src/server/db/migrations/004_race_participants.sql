@@ -46,16 +46,16 @@ CREATE TABLE IF NOT EXISTS race_participant (
   FOREIGN KEY (participant_id) REFERENCES participant (participant_id)
 );
 
-CREATE TRIGGER update_race_time
+CREATE TRIGGER IF NOT EXISTS update_race_time
 AFTER UPDATE OF end_time ON race_participant
 FOR EACH ROW
 WHEN NEW.end_time IS NOT NULL
 BEGIN
   UPDATE race_participant
   SET race_time = 
-    strftime('%H:%M:%S', 
-      julianday(NEW.end_time) - julianday((SELECT race_start_time FROM race WHERE race_id = NEW.race_id))
-    )
+    (SELECT 
+      strftime('%H:%M:%S', NEW.end_time - race_start_time)
+    FROM race 
+    WHERE race_id = NEW.race_id)
   WHERE race_id = NEW.race_id AND participant_id = NEW.participant_id;
 END;
-

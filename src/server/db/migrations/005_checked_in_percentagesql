@@ -54,9 +54,10 @@ WHEN NEW.end_time IS NOT NULL
 BEGIN
   UPDATE race_participant
   SET race_time = 
-    strftime('%H:%M:%S', 
-      julianday(NEW.end_time) - julianday((SELECT race_start_time FROM race WHERE race_id = NEW.race_id))
-    )
+    (SELECT 
+      strftime('%H:%M:%S', NEW.end_time - race_start_time)
+    FROM race 
+    WHERE race_id = NEW.race_id)
   WHERE race_id = NEW.race_id AND participant_id = NEW.participant_id;
 END;
 

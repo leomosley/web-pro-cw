@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Check out {{id}}</title>
+</head>
+
+<body>
+  <div style="display: flex; flex-direction: column;">
+    Check out for race: {{id}}
+    <input id="pid" type="text" placeholder="id" />
+    <button>Check out</button>
+  </div>
+</body>
+<script type="module">
+  const button = document.querySelector('button');
+  const pid = document.querySelector('#pid');
+
+  button.addEventListener('click', async () => {
+    const response = await fetch(`/api/race/${window.location.pathname.split("/")[2]}/check-out`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        participant_id: pid.value,
+        end_time: new Date().toLocaleTimeString(),
+      })
+    });
+    console.log(response);
+  });
+</script>
+
+</html>

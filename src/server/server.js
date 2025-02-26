@@ -7,21 +7,24 @@ import { createRoute } from '../lib/utils.js';
 import fastifyStatic from '@fastify/static';
 import { routes } from './api/routes/index.js';
 
+// MAIN FUNCTIONALITY NEEDS TO BE IN MAIN
+
+// Define port
 const PORT = 8080;
 
+// Init fastify app
 const app = Fastify({
   logger: true,
 });
 
+// Register static files to be served from `public` 
 app.register(fastifyStatic, {
   root: path.join(process.cwd(), 'src/client'),
   prefix: '/public/',
   index: false,
 });
 
-/*
-  Page Routes
-*/
+/* Page Routes */
 
 // Organise routes
 app.get('/', async (request, reply) => {
@@ -75,6 +78,22 @@ app.get('/organise/:id/check-in', async (request, reply) => {
   if (!response) throw new Error('Race doesnt exist');
 
   const pagesPath = path.join('src', 'pages', 'organise', '[id]', 'check-in', 'index.html');
+  let file = await fs.readFile(pagesPath, 'utf-8');
+
+
+  file = file.replace(/{{id}}/g, id);
+
+  reply.type('text/html').send(file);
+});
+
+app.get('/organise/:id/check-out', async (request, reply) => {
+  const { id } = request.params;
+
+  const response = await db.get('SELECT * FROM race WHERE race_id=?', id);
+
+  if (!response) throw new Error('Race doesnt exist');
+
+  const pagesPath = path.join('src', 'pages', 'organise', '[id]', 'check-out', 'index.html');
   let file = await fs.readFile(pagesPath, 'utf-8');
 
 
