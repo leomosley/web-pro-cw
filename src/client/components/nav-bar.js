@@ -1,9 +1,7 @@
-import "./link.js";
-
-export class NavBar extends HTMLElement {
+class NavBar extends HTMLElement {
   constructor() {
     super();
-    this.attachShadow({ mode: "open" }); // Use "open" so styles can be applied externally
+    this.attachShadow({ mode: "open" });
   }
 
   connectedCallback() {
@@ -22,9 +20,9 @@ export class NavBar extends HTMLElement {
         ${navItems
         .map(
           (item) => `
-              <custom-link href="${item.href}" target="_self">
+              <a href="${item.href}" target="_self">
                 ${item.label}
-              </custom-link>
+              </a>
             `
         )
         .join("")}

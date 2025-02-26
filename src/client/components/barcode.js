@@ -1,10 +1,10 @@
-export function toBinaryString(string) {
+function toBinaryString(string) {
   return string.split("")
     .map(char => char.charCodeAt(0).toString(2).padStart(8, '0'))
     .join(" ");
 }
 
-export class Barcode extends HTMLElement {
+class Barcode extends HTMLElement {
   constructor() {
     super();
     this.canvas = document.createElement("canvas");
