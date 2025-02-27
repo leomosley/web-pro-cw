@@ -24,6 +24,14 @@ app.register(fastifyStatic, {
   index: false,
 });
 
+// 404 handler
+app.setNotFoundHandler(async (request, reply) => {
+  reply.code(404);
+  const pagePath = path.join('src', 'pages');
+  const file = await fs.readFile(path.join(pagePath, 'not-found.html'), 'utf-8');
+  reply.type('text/html').send(file);
+});
+
 /* Page Routes */
 
 // Organise routes
