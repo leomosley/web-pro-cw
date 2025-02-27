@@ -11,8 +11,9 @@ class NavBar extends HTMLElement {
   render() {
     const navItems = [
       { label: 'Home', href: '/' },
-      { label: 'About', href: '/about' },
-      { label: 'Contact', href: '/contact' },
+      { label: 'Organise', href: '/organise' },
+      { label: 'Participant', href: '/participant' },
+      { label: 'View', href: '/view' },
     ];
 
     this.shadowRoot.innerHTML = `
