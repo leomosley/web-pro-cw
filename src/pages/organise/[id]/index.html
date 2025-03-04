@@ -5,9 +5,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Organise Race {{id}}</title>
+  <script src="/public/components/nav-bar.js"></script>
+  <script src="/public/components/start-race-button.js"></script>
 </head>
 
 <body>
+  <nav-bar></nav-bar>
   <div style="display: flex; flex-direction: column;">
     <p>
       Race name: {{race_name}}
@@ -25,6 +28,7 @@
       Checkpoints: {{checkpoints}}
     </p>
   </div>
+  <start-race-button raceId="{{id}}"></start-race-button>
 </body>
 
 </html>

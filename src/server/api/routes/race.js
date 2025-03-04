@@ -73,6 +73,21 @@ export async function updateRace(request, reply) {
   return { message: `Update race ${id}` };
 }
 
+export async function startRace(request, reply) {
+  const { id } = request.params;
+  const { race_start_time } = request.body;
+
+  const response = await db.run(`
+    UPDATE race
+    SET race_start_time = ?
+    WHERE race_id = ?;
+    `, [race_start_time, id]);
+
+  if (!response) throw new Error('Not found');
+
+  return response;
+}
+
 export async function deleteRace(request, reply) {
   const { id } = request.params;
 
@@ -114,6 +129,12 @@ export const raceRoutes = [
     url: '/api/race/:id',
     handler: updateRace,
     requiredParams: ['id'],
+  },
+  {
+    method: 'PATCH',
+    url: '/api/race/:id/start',
+    handler: startRace,
+    requiredParams: ['id', 'race_start_time'],
   },
   {
     method: 'DELETE',
