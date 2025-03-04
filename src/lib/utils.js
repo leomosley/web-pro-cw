@@ -62,10 +62,9 @@ export function createPageRoute(app, { url, handler }) {
         if (handler) file = await handler({ ...req, params, query, body }, file);
 
         reply.type('text/html').send(file);
-
       } catch (error) {
         app.log.error(error);
-        let file = await fs.readFile('src/pages/global-error.html', 'utf-8');
+        const file = await fs.readFile('src/pages/global-error.html', 'utf-8');
 
         reply.type('text/html').send(file);
       }
