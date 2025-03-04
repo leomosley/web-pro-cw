@@ -1,4 +1,4 @@
-/* Page Routes */
+import { db } from './db/index.js';
 
 export async function organisePage(request, file) {
   const { id } = request.params;
@@ -12,7 +12,7 @@ export async function organisePage(request, file) {
   file = file.replace(/{{race_date}}/g, response.race_date);
   file = file.replace(/{{check_in_open_time}}/g, response.check_in_open_time);
   file = file.replace(/{{race_start_time}}/g, response.race_start_time);
-  file = fi / ge.replace(/{{checkpoints}}/g, JSON.stringify(response.checkpoints));
+  file = file.replace(/{{checkpoints}}/g, JSON.stringify(response.checkpoints));
 
   return file;
 }
