@@ -94,6 +94,6 @@ export const pages = [
   },
   {
     url: '/volunteer/:id/finish',
-    handler: volunteerFinishPage
+    handler: volunteerFinishPage,
   },
 ];
