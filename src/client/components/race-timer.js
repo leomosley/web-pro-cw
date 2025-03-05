@@ -10,7 +10,7 @@ function formatTime(milliseconds) {
   const formattedTime = [
     hours.toString().padStart(2, '0'),
     minutes.toString().padStart(2, '0'),
-    seconds.toString().padStart(2, '0')
+    seconds.toString().padStart(2, '0'),
   ].join(':');
 
   return isNegative ? `-${formattedTime}` : formattedTime;
@@ -29,7 +29,7 @@ class RaceTimer extends HTMLElement {
   }
 
   connectedCallback() {
-    this.startTime = this.getAttribute("raceStartTime");
+    this.startTime = this.getAttribute('raceStartTime');
     this.render();
     this.observeAttributes();
     this.startTimer();
@@ -38,11 +38,11 @@ class RaceTimer extends HTMLElement {
   startTimer() {
     if (this.timerInterval) clearInterval(this.timerInterval);
 
-    const startTime = new Date(this.getAttribute("raceStartTime"));
-    const timer = this.shadowRoot.querySelector("#timer");
+    const startTime = new Date(this.getAttribute('raceStartTime'));
+    const timer = this.shadowRoot.querySelector('#timer');
 
     const updateTimer = () => {
-      if (this.getAttribute("stop") === "true") {
+      if (this.getAttribute('stop') === 'true') {
         clearInterval(this.timerInterval);
         return;
       }
@@ -62,13 +62,13 @@ class RaceTimer extends HTMLElement {
   observeAttributes() {
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
-        if (mutation.attributeName === "stop") {
-          if (this.getAttribute("stop") === "true") {
+        if (mutation.attributeName === 'stop') {
+          if (this.getAttribute('stop') === 'true') {
             clearInterval(this.timerInterval);
           } else {
             this.startTimer();
           }
-        } else if (mutation.attributeName === "raceStartTime") {
+        } else if (mutation.attributeName === 'raceStartTime') {
           this.startTimer(); // Reset timer when raceStartTime changes
         }
       });
@@ -86,4 +86,4 @@ class RaceTimer extends HTMLElement {
   }
 }
 
-customElements.define("race-timer", RaceTimer);
+customElements.define('race-timer', RaceTimer);

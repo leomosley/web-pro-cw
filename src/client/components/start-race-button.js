@@ -29,7 +29,7 @@ class StartRaceButton extends HTMLElement {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        [this.isRunning ? 'race_end_time' : 'race_start_time']: now
+        [this.isRunning ? 'race_end_time' : 'race_start_time']: now,
       }),
     });
 
