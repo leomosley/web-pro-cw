@@ -7,6 +7,7 @@
   <title>Organise Race {{id}}</title>
   <script src="/public/components/nav-bar.js"></script>
   <script src="/public/components/start-race-button.js"></script>
+  <script src="/public/components/race-timer.js"></script>
 </head>
 
 <body>
@@ -28,7 +29,9 @@
       Checkpoints: {{checkpoints}}
     </p>
   </div>
-  <start-race-button raceId="{{id}}"></start-race-button>
+  <race-timer raceStartTime="{{race_start_time}}" stop="false"></race-timer>
+  <start-race-button raceId="{{id}}" raceStartTime="{{race_start_time}}"></start-race-button>
+  <stop-race-button raceId="{{id}}" raceStartTime="{{race_start_time}}"></stop-race-button>
 </body>
 
 </html>

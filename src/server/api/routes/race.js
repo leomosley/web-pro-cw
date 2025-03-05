@@ -88,6 +88,22 @@ export async function startRace(request, reply) {
   return response;
 }
 
+export async function stopRace(request, reply) {
+  const { id } = request.params;
+  const { race_end_time } = request.body;
+
+  // const response = await db.run(`
+  //   UPDATE race
+  //   SET race_start_time = ?
+  //   WHERE race_id = ?;
+  //   `, [race_start_time, id]);
+
+  // if (!response) throw new Error('Not found');
+
+  return { message: 'Race stopped' };
+}
+
+
 export async function deleteRace(request, reply) {
   const { id } = request.params;
 
@@ -135,6 +151,12 @@ export const raceRoutes = [
     url: '/api/race/:id/start',
     handler: startRace,
     requiredParams: ['id', 'race_start_time'],
+  },
+  {
+    method: 'PATCH',
+    url: '/api/race/:id/stop',
+    handler: stopRace,
+    requiredParams: ['id', 'race_end_time'],
   },
   {
     method: 'DELETE',
