@@ -1,25 +1,4 @@
-function formatTime(milliseconds) {
-  const isNegative = milliseconds < 0;
-  milliseconds = Math.abs(milliseconds);
-
-  const totalSeconds = Math.floor(milliseconds / 1000);
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const seconds = totalSeconds % 60;
-
-  const formattedTime = [
-    hours.toString().padStart(2, '0'),
-    minutes.toString().padStart(2, '0'),
-    seconds.toString().padStart(2, '0'),
-  ].join(':');
-
-  return isNegative ? `-${formattedTime}` : formattedTime;
-}
-
-function calculateElapsedTime(startTime, endTime) {
-  const elapsed = endTime - startTime;
-  return formatTime(elapsed);
-}
+import { formatTime, calculateElapsedTime } from '../utils.js';
 
 class RaceTimer extends HTMLElement {
   constructor() {
@@ -31,50 +10,39 @@ class RaceTimer extends HTMLElement {
   connectedCallback() {
     this.startTime = this.getAttribute('raceStartTime');
     this.render();
-    this.observeAttributes();
-    this.startTimer();
+    this.startTimer(); // Call startTimer in connectedCallback
+  }
+
+  disconnectedCallback() {
+    clearInterval(this.timerInterval); // Clear interval when element is removed
   }
 
   startTimer() {
-    if (this.timerInterval) clearInterval(this.timerInterval);
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
+    }
 
-    const startTime = new Date(this.getAttribute('raceStartTime'));
+    const startTime = new Date(this.startTime);
     const timer = this.shadowRoot.querySelector('#timer');
 
     const updateTimer = () => {
-      if (this.getAttribute('stop') === 'true') {
-        clearInterval(this.timerInterval);
-        return;
-      }
-
       const now = new Date();
-      if (now < startTime) {
-        timer.textContent = formatTime(startTime - now);
-      } else {
-        timer.textContent = calculateElapsedTime(startTime, now);
-      }
+      timer.textContent = calculateElapsedTime(startTime, now);
     };
 
-    updateTimer();
+    updateTimer(); // Call immediately to avoid initial delay
     this.timerInterval = setInterval(updateTimer, 1000);
   }
 
-  observeAttributes() {
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.attributeName === 'stop') {
-          if (this.getAttribute('stop') === 'true') {
-            clearInterval(this.timerInterval);
-          } else {
-            this.startTimer();
-          }
-        } else if (mutation.attributeName === 'raceStartTime') {
-          this.startTimer(); // Reset timer when raceStartTime changes
-        }
-      });
-    });
+  static get observedAttributes() {
+    return ['raceStartTime']; // Define observed attributes
+  }
 
-    observer.observe(this, { attributes: true });
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (name === 'raceStartTime' && newValue !== oldValue) {
+      this.startTime = newValue;
+      this.startTimer(); // Restart timer when attribute changes
+    }
   }
 
   render() {

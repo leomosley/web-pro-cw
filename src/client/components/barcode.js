@@ -21,7 +21,9 @@ class Barcode extends HTMLElement {
       return;
     }
 
-    const binaryString = toBinaryString(value); // Convert value to binary string
+    const withChecksum = `[X]${value}[X]`
+
+    const binaryString = toBinaryString(withChecksum); // Convert value to binary string
     const ctx = this.canvas.getContext('2d');
     const barWidth = 2; // Width of each barcode bar
     const height = 100; // Height of the barcode

@@ -1,13 +1,23 @@
 export const localStore = {
   setItem(key, value) {
     try {
+      let valueToStore = value;
       const existingData = this.getItem(key);
+
       if (Array.isArray(existingData)) {
-        existingData.push(...value);
-        localStorage.setItem(key, existingData);
+        if (!Array.isArray(value)) {
+          console.warn(
+            "setItem: Appending a non-array value to an existing array.  This may lead to unexpected behavior."
+          );
+        }
+        existingData.push(...(Array.isArray(value) ? value : [value]));
+        valueToStore = JSON.stringify(existingData);
+
       } else {
-        localStorage.setItem(key, value);
+        valueToStore = JSON.stringify(value);
       }
+
+      localStorage.setItem(key, valueToStore);
     } catch (error) {
       console.error(`Error setting item in localStorage: ${error}`);
     }
@@ -18,7 +28,13 @@ export const localStore = {
       const value = localStorage.getItem(key);
       return value ? JSON.parse(value) : null;
     } catch (error) {
-      console.error(`Error getting item from localStorage: ${error}`);
+      const rawValue = localStorage.getItem(key);
+      if (rawValue) {
+        console.warn(
+          `getItem: Could not parse value for key "${key}" as JSON. Returning raw value.`
+        );
+        return rawValue;
+      }
       return null;
     }
   },
@@ -37,5 +53,5 @@ export const localStore = {
     } catch (error) {
       console.error(`Error clearing localStorage: ${error}`);
     }
-  }
+  },
 };
