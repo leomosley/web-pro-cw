@@ -1,4 +1,4 @@
-import { templates } from "../app.mjs";
+import { templates } from '../app.mjs';
 
 class RaceDashboard extends HTMLElement {
   constructor() {
@@ -12,8 +12,8 @@ class RaceDashboard extends HTMLElement {
   }
 
   render() {
-    this.shadowRoot.innerHTML = ``;
-    templates
+    this.shadowRoot.innerHTML = '';
+    templates;
   }
 }
 

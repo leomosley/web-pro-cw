@@ -1,24 +1,24 @@
-import { localStore } from "../lib/localStore.mjs";
-import { generateRandomId } from "../lib/utils.mjs";
+import { localStore } from '../lib/localStore.mjs';
+import { generateRandomId } from '../lib/utils.mjs';
 
 class GenerateParticipantIDButton extends HTMLElement {
   constructor() {
     super();
-    this.attachShadow({ mode: "open" });
+    this.attachShadow({ mode: 'open' });
   }
 
   connectedCallback() {
-    if (!this.shadowRoot.querySelector("button")) {
+    if (!this.shadowRoot.querySelector('button')) {
       this.render();
     }
   }
 
   render() {
-    const button = document.createElement("button");
-    button.dataset.view = this.getAttribute("view");
-    button.textContent = "Generate Participant ID";
+    const button = document.createElement('button');
+    button.dataset.view = this.getAttribute('view');
+    button.textContent = 'Generate Participant ID';
 
-    button.addEventListener("click", this.handleClick.bind(this));
+    button.addEventListener('click', this.handleClick.bind(this));
 
     this.shadowRoot.appendChild(button);
   }
@@ -27,10 +27,10 @@ class GenerateParticipantIDButton extends HTMLElement {
     const participantId = generateRandomId();
 
     try {
-      const response = await fetch("/api/participant", {
-        method: "POST",
+      const response = await fetch('/api/participant', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           participant_id: participantId,
@@ -39,19 +39,17 @@ class GenerateParticipantIDButton extends HTMLElement {
 
       if (!response.ok) {
         console.error(`HTTP error! Status: ${response.status}`);
-        return;
       }
-
     } catch (error) {
-      console.error("Fetch error:", error);
+      console.error('Fetch error:', error);
     } finally {
-      localStore.setItem("participantId", participantId);
+      localStore.setItem('participantId', participantId);
 
       this.dispatchEvent(
-        new CustomEvent("participant-id-generated", {
+        new CustomEvent('participant-id-generated', {
           bubbles: true,
           composed: true,
-        })
+        }),
       );
     }
   }
@@ -59,6 +57,6 @@ class GenerateParticipantIDButton extends HTMLElement {
 
 
 customElements.define(
-  "generate-participant-id-button",
-  GenerateParticipantIDButton
+  'generate-participant-id-button',
+  GenerateParticipantIDButton,
 );

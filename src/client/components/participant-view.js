@@ -1,30 +1,30 @@
-import { localStore } from "../lib/localStore.mjs";
+import { localStore } from '../lib/localStore.mjs';
 
 class ParticipantView extends HTMLElement {
   constructor() {
     super();
-    this.attachShadow({ mode: "open" });
+    this.attachShadow({ mode: 'open' });
     this.render();
   }
 
   connectedCallback() {
-    this.addEventListener("participant-id-generated", this.render.bind(this));
+    this.addEventListener('participant-id-generated', this.render.bind(this));
   }
 
   disconnectedCallback() {
     this.removeEventListener(
-      "participant-id-generated",
-      this.render.bind(this)
+      'participant-id-generated',
+      this.render.bind(this),
     );
   }
 
   clearId() {
-    localStore.removeItem("participantId");
+    localStore.removeItem('participantId');
     this.render();
   }
 
   render() {
-    const participantId = localStore.getItem("participantId");
+    const participantId = localStore.getItem('participantId');
     this.shadowRoot.innerHTML = `
       <div>
         ${participantId
@@ -41,11 +41,11 @@ class ParticipantView extends HTMLElement {
     `;
 
 
-    const clearButton = this.shadowRoot.querySelector("#clear-button");
+    const clearButton = this.shadowRoot.querySelector('#clear-button');
     if (clearButton) {
-      clearButton.addEventListener("click", this.clearId.bind(this));
+      clearButton.addEventListener('click', this.clearId.bind(this));
     }
   }
 }
 
-customElements.define("participant-view", ParticipantView);
+customElements.define('participant-view', ParticipantView);
