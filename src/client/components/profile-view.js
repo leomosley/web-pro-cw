@@ -26,7 +26,6 @@ class ProfileView extends HTMLElement {
       this.user = event.detail.newValue;
 
       this.render();
-
     }
   }
 
@@ -38,11 +37,9 @@ class ProfileView extends HTMLElement {
     if (!this.user) {
       button.setAttribute('view', 'sign-in');
       button.textContent = 'Sign In';
-
     } else {
       button.setAttribute('view', 'sign-out');
       button.textContent = 'Sign Out';
-
     }
 
     this.shadowRoot.appendChild(button);

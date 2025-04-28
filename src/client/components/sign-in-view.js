@@ -1,6 +1,6 @@
-import { getUser } from "../app.mjs";
-import { localStore } from "../lib/localstore.mjs";
-import { navigate } from "../lib/views.mjs";
+import { getUser } from '../app.mjs';
+import { localStore } from '../lib/localstore.mjs';
+import { navigate } from '../lib/views.mjs';
 
 class SignInView extends HTMLElement {
   constructor() {
@@ -40,7 +40,7 @@ class SignInView extends HTMLElement {
 
   handleSignIn(event) {
     localStore.setItem('user', {
-      role: 'participant'
+      role: 'participant',
     });
   }
 
