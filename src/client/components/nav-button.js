@@ -1,4 +1,4 @@
-import { storeState, show } from '../lib/views.mjs';
+import { navigate } from '../lib/views.mjs';
 
 class NavButton extends HTMLElement {
   constructor() {
@@ -23,8 +23,7 @@ class NavButton extends HTMLElement {
   }
 
   handleClick(event) {
-    show(event);
-    storeState();
+    navigate(event?.target?.dataset?.view ?? 'home');
   }
 }
 

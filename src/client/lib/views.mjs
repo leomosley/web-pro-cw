@@ -11,13 +11,15 @@ export function hideElement(e) {
 }
 
 // Show a specific view based on event
-export function show(event) {
+export function show(view) {
   ui.previous = ui.current;
-  const view = event?.target?.dataset?.view ?? 'home';
-
-  showView(view);
+  showView(view ?? 'home');
 }
 
+export function navigate(view) {
+  show(view);
+  storeState();
+}
 
 // Hide all views
 export function hideAllViews() {
@@ -72,7 +74,6 @@ export function showView(name) {
   hideAllViews();
   enableAllButtons();
 
-  console.log('showView', name);
   if (!ui.views[name]) {
     name = 'error';
   }

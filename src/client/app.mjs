@@ -1,4 +1,5 @@
 import { getContent, loadInitialScreen } from "./lib/views.mjs";
+import { localStore } from "./lib/localstore.mjs";
 
 export const pages = [
   {
@@ -18,16 +19,28 @@ export const pages = [
     title: 'Create a Race'
   },
   {
-    view: `organise/race`,
+    view: 'organise/race',
     title: 'Race'
   },
   {
-    view: `organise/races`,
+    view: 'organise/races',
     title: 'My Races'
   },
   {
-    view: `profile`,
+    view: 'profile',
     title: 'Profile'
+  },
+  {
+    view: 'sign-in',
+    title: 'Sign In'
+  },
+  {
+    view: 'sign-up',
+    title: 'Sign Up'
+  },
+  {
+    view: 'sign-out',
+    title: 'Sign Out'
   }
 ];
 
@@ -35,7 +48,7 @@ export const templates = {};
 
 export const ui = {};
 
-const user = () => localStorage.getItem('user') ?? null;
+export const getUser = () => localStore.getItem('user') ?? null;
 
 function getHandles() {
   ui.mainnav = document.querySelector('header > nav');
@@ -52,7 +65,7 @@ function buildViews() {
   for (const page of pages) {
     const section = template.content.cloneNode(true).firstElementChild;
 
-    section.dataset.id = `sect-${page.view}`;
+    section.dataset.id = 'sect-${page.view}';
     section.dataset.name = page.view;
 
     ui.main.append(section);
