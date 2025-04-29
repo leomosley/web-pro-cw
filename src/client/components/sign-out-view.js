@@ -1,5 +1,5 @@
-import { getUser } from '../app.mjs';
-import { localStore } from '../lib/localstore.mjs';
+import { getUser } from '../index.mjs';
+import { localStore } from '../lib/localStore.mjs';
 import { navigate, readPath } from '../lib/views.mjs';
 
 class SignOutView extends HTMLElement {

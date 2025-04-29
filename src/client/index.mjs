@@ -1,5 +1,5 @@
 import { getContent, loadInitialView } from "./lib/views.mjs";
-import { localStore } from "./lib/localstore.mjs";
+import { localStore } from "./lib/localStore.mjs";
 
 export const pages = [
   {
@@ -65,7 +65,7 @@ function buildViews() {
   for (const page of pages) {
     const section = template.content.cloneNode(true).firstElementChild;
 
-    section.dataset.id = 'sect-${page.view}';
+    section.dataset.id = `sect-${page.view}`;
     section.dataset.name = page.view;
 
     ui.main.append(section);

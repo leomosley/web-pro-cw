@@ -1,4 +1,4 @@
-import { localStore } from '../lib/localstore.mjs';
+import { localStore } from '../lib/localStore.mjs';
 
 class ParticipantView extends HTMLElement {
   constructor() {
