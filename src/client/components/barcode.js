@@ -1,8 +1,4 @@
-function toBinaryString(string) {
-  return string.split('')
-    .map(char => char.charCodeAt(0).toString(2).padStart(8, '0'))
-    .join(' ');
-}
+import { toBinaryString } from "../lib/utils.mjs";
 
 class Barcode extends HTMLElement {
   constructor() {
