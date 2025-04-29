@@ -1,4 +1,4 @@
-import { ui, pages } from "../app.mjs";
+import { ui, pages } from "../index.mjs";
 import { middleware } from "./middleware.mjs";
 
 // Show a specific element

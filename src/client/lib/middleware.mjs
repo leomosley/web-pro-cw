@@ -1,4 +1,4 @@
-import { getUser } from "../app.mjs";
+import { getUser } from "../index.mjs";
 
 export const protectedViews = [
   'home',
