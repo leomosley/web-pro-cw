@@ -1,3 +1,5 @@
+import { localStore } from "./localStore.mjs";
+
 export function formatTime(milliseconds) {
   const isNegative = milliseconds < 0;
   milliseconds = Math.abs(milliseconds);
@@ -18,6 +20,7 @@ export function formatTime(milliseconds) {
 
 export function calculateElapsedTime(startTime, endTime) {
   const elapsed = endTime - startTime;
+
   return formatTime(elapsed);
 }
 
@@ -31,4 +34,10 @@ export function toBinaryString(string) {
   return string.split('')
     .map(char => char.charCodeAt(0).toString(2).padStart(8, '0'))
     .join(' ');
+}
+
+export function getRaceById(raceId) {
+  const races = localStore.getItem('race') ?? [];
+  const filtred = races.filter((race) => race.race_id === Number(raceId));
+  return filtred[0] ?? null;
 }

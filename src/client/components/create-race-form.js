@@ -34,8 +34,10 @@ class CreateRaceForm extends HTMLElement {
   }
 
   async handleSubmit() {
-    const raceId = 1;
+    const races = localStore.getItem('race') ?? [];
+    const raceId = races.length + 1;
     const data = {
+      race_id: raceId,
       location_id: 1,
       race_name: this.shadowRoot.querySelector("input[name='race-name']").value,
       race_date: this.shadowRoot.querySelector("input[name='race-date']").value,

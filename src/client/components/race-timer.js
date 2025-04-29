@@ -1,56 +1,148 @@
-import { formatTime, calculateElapsedTime } from '../utils.js';
+import { localStore } from '../lib/localStore.mjs';
+import { calculateElapsedTime } from '../lib/utils.mjs';
+import { formatTime } from '../lib/utils.mjs';
+
+const STORAGE_KEY_START_TIME = 'raceTimerStartTime';
 
 class RaceTimer extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: 'open' });
     this.timerInterval = null;
-  }
-
-  connectedCallback() {
-    this.startTime = this.getAttribute('raceStartTime');
-    this.render();
-    this.startTimer(); // Call startTimer in connectedCallback
-  }
-
-  disconnectedCallback() {
-    clearInterval(this.timerInterval); // Clear interval when element is removed
-  }
-
-  startTimer() {
-    if (this.timerInterval) {
-      clearInterval(this.timerInterval);
-    }
-
-    const startTime = new Date(this.startTime);
-    const timer = this.shadowRoot.querySelector('#timer');
-
-    const updateTimer = () => {
-      const now = new Date();
-      timer.textContent = calculateElapsedTime(startTime, now);
-    };
-
-    updateTimer(); // Call immediately to avoid initial delay
-    this.timerInterval = setInterval(updateTimer, 1000);
+    this.startTime = null;
+    this.addEventListener('click', this.toggleTimer.bind(this));
   }
 
   static get observedAttributes() {
-    return ['raceStartTime']; // Define observed attributes
+    return ['start-time'];
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
-    if (name === 'raceStartTime' && newValue !== oldValue) {
-      this.startTime = newValue;
-      this.startTimer(); // Restart timer when attribute changes
+    if (name === 'start-time') {
+      this.handleStartTimeAttribute(newValue);
+      this.updateDisplayForState();
+      this.checkAndStartTimer();
     }
+  }
+
+  connectedCallback() {
+    this.render();
+    if (!this.handleStartTimeAttribute(this.getAttribute('start-time'))) {
+      this.loadStartTime();
+    }
+    this.updateDisplayForState();
+    this.checkAndStartTimer();
+  }
+
+  disconnectedCallback() {
+    this.stopTimer();
   }
 
   render() {
     this.shadowRoot.innerHTML = `
-      <div>
-        <span id="timer"></span>
-      </div>
+      <span id="timer-display">00:00:00</span>
     `;
+  }
+
+  get timerDisplay() {
+    return this.shadowRoot.querySelector('#timer-display');
+  }
+
+  toggleTimer() {
+    if (this.timerInterval) {
+      this.stopTimer();
+    } else {
+      this.checkAndStartTimer(true);
+    }
+  }
+
+  checkAndStartTimer(forceStart = false) {
+    const now = Date.now();
+    if (this.startTime !== null && (this.startTime <= now || forceStart)) {
+      this.startTimer();
+    } else {
+      this.stopTimer();
+      this.updateDisplayForState();
+    }
+  }
+
+  startTimer() {
+    if (this.timerInterval) return;
+
+    if (this.startTime === null) {
+      this.startTime = Date.now();
+      this.saveStartTime();
+    }
+
+    this.timerInterval = setInterval(() => {
+      const currentTime = Date.now();
+      const elapsedTime = calculateElapsedTime(this.startTime, currentTime);
+      this.updateDisplay(elapsedTime);
+    }, 1000);
+
+    this.updateDisplay(calculateElapsedTime(this.startTime, Date.now()));
+  }
+
+  stopTimer() {
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
+      this.timerInterval = null;
+    }
+  }
+
+  updateDisplay(timeString) {
+    if (this.timerDisplay) {
+      this.timerDisplay.textContent = timeString;
+    }
+  }
+
+  updateDisplayForState() {
+    const now = Date.now();
+    if (this.startTime === null) {
+      this.updateDisplay('00:00:00');
+    } else if (this.startTime > now) {
+      const timeUntilStart = this.startTime - now;
+      this.updateDisplay(formatTime(0));
+    } else {
+      this.updateDisplay(calculateElapsedTime(this.startTime, now));
+    }
+  }
+
+  saveStartTime() {
+    if (this.startTime !== null) {
+      localStore.setItem(STORAGE_KEY_START_TIME, this.startTime);
+    } else {
+      localStore.removeItem(STORAGE_KEY_START_TIME);
+    }
+  }
+
+  loadStartTime() {
+    const storedStartTime = localStore.getItem(STORAGE_KEY_START_TIME);
+    if (storedStartTime !== null) {
+      this.startTime = storedStartTime;
+    } else {
+      this.startTime = null;
+    }
+  }
+
+  handleStartTimeAttribute(value) {
+    if (value !== null) {
+      const parsedTime = parseInt(value, 10);
+      if (!isNaN(parsedTime)) {
+        this.startTime = parsedTime;
+        return true;
+      } else {
+        console.warn(`RaceTimer: Invalid start-time attribute value: "${value}". Expected a number.`);
+      }
+    }
+    return false;
+  }
+
+  resetTimer() {
+    this.stopTimer();
+    this.startTime = null;
+    this.saveStartTime();
+    this.updateDisplay('00:00:00');
   }
 }
 
