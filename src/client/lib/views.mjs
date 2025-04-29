@@ -1,4 +1,5 @@
 import { ui, pages } from "../app.mjs";
+import { middleware } from "./middleware.mjs";
 
 // Show a specific element
 export function showElement(e) {
@@ -13,7 +14,19 @@ export function hideElement(e) {
 // Show a specific view based on event
 export function show(view) {
   ui.previous = ui.current;
-  showView(view ?? 'home');
+
+  let targetView = view ?? 'home';
+
+  for (const fn of middleware) {
+    const resultView = fn(targetView);
+
+    if (resultView !== targetView) {
+      targetView = resultView;
+      return show(targetView);
+    }
+  }
+
+  showView(targetView);
 }
 
 export function navigate(view) {
@@ -93,7 +106,7 @@ export function showView(name) {
 
 export function loadInitialView() {
   ui.current = readPath();
-  showView(ui.current);
+  show(ui.current);
 }
 
 export async function getContent() {
