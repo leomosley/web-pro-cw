@@ -39,16 +39,14 @@ export function enableAllButtons() {
 export function readPath() {
   let path = window.location.pathname;
 
-  // Remove trailing slash
   if (path.endsWith("/")) {
     path = path.slice(0, -1);
   }
 
-  // Use regex to remove search parameters and hash fragments
   const basePath = path.replace(/[?|&#].*$/, "");
 
-  // Remove the initial "/app/"
   const cleanedPath = basePath.slice(5);
+
 
   return cleanedPath === "" ? "home" : cleanedPath;
 }
@@ -93,7 +91,7 @@ export function showView(name) {
   }
 }
 
-export function loadInitialScreen() {
+export function loadInitialView() {
   ui.current = readPath();
   showView(ui.current);
 }

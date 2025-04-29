@@ -1,3 +1,4 @@
+import { ui } from '../app.mjs';
 import { navigate } from '../lib/views.mjs';
 
 class NavButton extends HTMLElement {

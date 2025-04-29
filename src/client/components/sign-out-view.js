@@ -1,6 +1,6 @@
 import { getUser } from '../app.mjs';
 import { localStore } from '../lib/localstore.mjs';
-import { navigate } from '../lib/views.mjs';
+import { navigate, readPath } from '../lib/views.mjs';
 
 class SignOutView extends HTMLElement {
   constructor() {
@@ -9,13 +9,15 @@ class SignOutView extends HTMLElement {
     this.user = null;
 
     this.handleUserChange = this.handleUserChange.bind(this);
+    this.handleSignOut = this.handleSignOut.bind(this);
   }
 
   connectedCallback() {
     this.user = getUser();
+    const currentPath = readPath();
 
-    if (!this.user) {
-      navigate('home');
+    if (!!this.user && currentPath === 'sign-out') {
+      return navigate('home');
     }
 
     this.render();
@@ -32,7 +34,8 @@ class SignOutView extends HTMLElement {
       this.user = event.detail.newValue;
       this.render();
 
-      if (!this.user) {
+      const currentPath = readPath();
+      if (!this.user && currentPath === 'sign-out') {
         navigate('home');
       }
     }

@@ -1,6 +1,6 @@
 import { getUser } from '../app.mjs';
 import { localStore } from '../lib/localstore.mjs';
-import { navigate } from '../lib/views.mjs';
+import { navigate, readPath } from '../lib/views.mjs';
 
 class SignUpView extends HTMLElement {
   constructor() {
@@ -9,13 +9,15 @@ class SignUpView extends HTMLElement {
     this.user = null;
 
     this.handleUserChange = this.handleUserChange.bind(this);
+    this.handleSignUp = this.handleSignUp.bind(this);
   }
 
   connectedCallback() {
     this.user = getUser();
+    const currentPath = readPath();
 
-    if (this.user) {
-      navigate('home');
+    if (this.user && currentPath === 'sign-up') {
+      return navigate('home');
     }
 
     this.render();
@@ -32,28 +34,31 @@ class SignUpView extends HTMLElement {
       this.user = event.detail.newValue;
       this.render();
 
-      if (this.user) {
+      const currentPath = readPath();
+      if (this.user && currentPath === 'sign-up') {
         navigate('home');
       }
     }
   }
 
-  handleSignIn(event) {
+  handleSignUp(event) {
     localStore.setItem('user', {
       role: 'participant',
     });
+
+    navigate('home');
   }
 
   render() {
     this.shadowRoot.innerHTML = '';
 
     if (!this.user) {
-      const form = [
+      const fields = [
         { label: 'Email', type: 'email', name: 'email' },
         { label: 'Password', type: 'password', name: 'password' },
       ];
 
-      for (const field of form) {
+      for (const field of fields) {
         const label = document.createElement('label');
         label.textContent = field.label;
 
@@ -67,12 +72,10 @@ class SignUpView extends HTMLElement {
       }
 
       const button = document.createElement('button');
-      button.addEventListener('click', this.handleSignIn.bind(this));
+      button.addEventListener('click', this.handleSignUp);
       button.textContent = 'Sign Up';
 
       this.shadowRoot.appendChild(button);
-    } else {
-      navigate('home');
     }
   }
 }

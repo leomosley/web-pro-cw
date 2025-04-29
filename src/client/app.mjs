@@ -1,4 +1,4 @@
-import { getContent, loadInitialScreen } from "./lib/views.mjs";
+import { getContent, loadInitialView } from "./lib/views.mjs";
 import { localStore } from "./lib/localstore.mjs";
 
 export const pages = [
@@ -96,8 +96,8 @@ async function main() {
   buildViews();
   setupNav();
   await getContent();
-  window.addEventListener('popstate', loadInitialScreen);
-  loadInitialScreen();
+  window.addEventListener('popstate', loadInitialView);
+  loadInitialView();
 }
 
 main();
