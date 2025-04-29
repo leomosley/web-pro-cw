@@ -1,4 +1,4 @@
-import { toBinaryString } from "../lib/utils.mjs";
+import { toBinaryString } from '../lib/utils.mjs';
 
 class Barcode extends HTMLElement {
   constructor() {
