@@ -1,6 +1,6 @@
 import { localStore } from '../lib/localStore.mjs';
-import { calculateElapsedTime } from '../lib/utils.mjs';
-import { formatTime } from '../lib/utils.mjs';
+import { calculateElapsedTime, formatTime } from '../lib/utils.mjs';
+
 
 const STORAGE_KEY_START_TIME = 'raceTimerStartTime';
 

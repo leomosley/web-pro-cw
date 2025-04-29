@@ -1,4 +1,4 @@
-import { getRaceById } from "../lib/utils.mjs";
+import { getRaceById } from '../lib/utils.mjs';
 
 class RaceDashboard extends HTMLElement {
   constructor() {
@@ -38,7 +38,7 @@ class RaceDashboard extends HTMLElement {
   }
 
   render() {
-    this.shadowRoot.innerHTML = ``;
+    this.shadowRoot.innerHTML = '';
 
     const title = document.createElement('h1');
     title.textContent = `${this.race.race_name}`;
