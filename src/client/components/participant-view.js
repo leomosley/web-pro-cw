@@ -26,18 +26,20 @@ class ParticipantView extends HTMLElement {
   render() {
     const participantId = localStore.getItem('participantId');
     this.shadowRoot.innerHTML = `
-      <div>
+      <section>
         ${participantId
         ? `
               <participant-barcode value="${participantId}"></participant-barcode>
               <p>ID: ${participantId}</p>
               <button id="clear-button">Clear ID</button>
+              <h1>My Races</h1>
+              <race-list></race-list>
             `
         : `
               <generate-participant-id-button></generate-participant-id-button>
             `
       }
-      </div>
+      </section>
     `;
 
 
