@@ -1,4 +1,4 @@
-import { localStore } from "./localStore.mjs";
+import { localStore } from './localStore.mjs';
 
 export function formatTime(milliseconds) {
   const isNegative = milliseconds < 0;
@@ -40,4 +40,45 @@ export function getRaceById(raceId) {
   const races = localStore.getItem('race') ?? [];
   const filtred = races.filter((race) => race.race_id === Number(raceId));
   return filtred[0] ?? null;
+}
+
+export function setUserRole(role) {
+  const roleOptions = [
+    'participant',
+    'volunteer',
+    'organiser',
+    ''
+  ];
+
+  if (!roleOptions.includes(role)) {
+    throw new Error(`${role} is not a valid option from: ${roleOptions.join(', ')}`)
+  }
+
+  const prev = localStore.getItem('user');
+  localStore.setItem('user', {
+    ...prev,
+    role
+  });
+
+  return {
+    oldValue: prev.role,
+    nevValue: role
+  }
+}
+
+export function setUserOnboarded(onboarded) {
+  if (typeof onboarded !== "boolean") {
+    throw new Error(`${onboarded} is not assignable to typeof 'boolean'`);
+  }
+
+  const prev = localStore.getItem('user');
+  localStore.setItem('user', {
+    ...prev,
+    onboarded
+  });
+
+  return {
+    oldValue: prev.onboarded,
+    newValue: onboarded
+  }
 }

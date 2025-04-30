@@ -99,7 +99,7 @@ export function showView(name) {
     return;
   }
 
-  if (ui.buttons[name]) {
+  if (ui.buttons && ui.buttons[name]) {
     ui.buttons[name].disabled = 'disabled';
   }
 }

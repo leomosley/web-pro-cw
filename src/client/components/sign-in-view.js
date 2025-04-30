@@ -43,7 +43,7 @@ class SignInView extends HTMLElement {
 
   handleSignIn(event) {
     localStore.setItem('user', {
-      role: 'participant',
+      id: 1,
     });
   }
 

@@ -41,6 +41,10 @@ export const pages = [
   {
     view: 'sign-out',
     title: 'Sign Out'
+  },
+  {
+    view: 'onboarding',
+    title: 'Onboarding'
   }
 ];
 
@@ -51,11 +55,12 @@ export const ui = {};
 export const getUser = () => localStore.getItem('user') ?? null;
 
 function getHandles() {
-  ui.mainnav = document.querySelector('header > nav');
+  ui.mainnav = document.querySelector('header > nav-bar');
   ui.main = document.querySelector('main');
   ui.views = {};
-  ui.getViews = () => Object.values(ui.views);
-  ui.getButtons = () => Object.values(ui.buttons);
+  ui.buttons = {};
+  ui.getViews = () => Object.values(ui.views ?? {});
+  ui.getButtons = () => Object.values(ui.buttons ?? {});
   templates.view = document.querySelector('#tmp-view');
 }
 
@@ -74,27 +79,9 @@ function buildViews() {
   }
 }
 
-function setupNav() {
-  ui.buttons = {};
-  const nav = [
-    { title: 'Home', view: 'home' },
-    { title: 'Organise', view: 'organise' },
-    { title: 'Profile', view: 'profile' },
-  ]
-  for (const item of nav) {
-    const button = document.createElement('nav-button');
-    button.setAttribute('view', item.view);
-    button.textContent = item.title;
-
-    ui.mainnav.appendChild(button);
-    ui.buttons[item.view] = button;
-  }
-}
-
 async function main() {
   getHandles();
   buildViews();
-  setupNav();
   await getContent();
   window.addEventListener('popstate', loadInitialView);
   loadInitialView();

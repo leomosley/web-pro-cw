@@ -43,10 +43,11 @@ class SignUpView extends HTMLElement {
 
   handleSignUp(event) {
     localStore.setItem('user', {
-      role: 'participant',
+      id: 1,
+      onboarded: false
     });
 
-    navigate('home');
+    navigate('onboarding');
   }
 
   render() {
