@@ -44,7 +44,7 @@ class SignUpView extends HTMLElement {
   handleSignUp(event) {
     localStore.setItem('user', {
       id: 1,
-      onboarded: false
+      onboarded: false,
     });
 
     navigate('onboarding');

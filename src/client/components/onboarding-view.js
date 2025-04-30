@@ -66,7 +66,7 @@ class OnboardingView extends HTMLElement {
       'Participant',
       'Organiser',
       'Volunteer',
-      'Viewer'
+      'Viewer',
     ];
 
     for (const option of options) {

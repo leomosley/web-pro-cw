@@ -1,4 +1,4 @@
-import { ui } from "../index.mjs";
+import { ui } from '../index.mjs';
 
 class NavBar extends HTMLElement {
   constructor() {
