@@ -1,4 +1,5 @@
-import { getUser, ui } from '../index.mjs';
+import { ui } from '../index.mjs';
+import { userStore } from '../lib/auth.mjs';
 
 class NavBar extends HTMLElement {
   constructor() {
@@ -8,7 +9,7 @@ class NavBar extends HTMLElement {
   }
 
   connectedCallback() {
-    this.user = getUser();
+    this.user = userStore.get();
     this.render();
   }
 

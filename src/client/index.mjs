@@ -52,8 +52,6 @@ export const templates = {};
 
 export const ui = {};
 
-export const getUser = () => localStore.getItem('user') ?? null;
-
 function getHandles() {
   ui.mainnav = document.querySelector('header > nav-bar');
   ui.main = document.querySelector('main');

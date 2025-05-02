@@ -1,4 +1,4 @@
-import { getUser } from '../index.mjs';
+import { userStore } from '../lib/auth.mjs';
 import { localStore } from '../lib/localStore.mjs';
 import { navigate, readPath } from '../lib/views.mjs';
 
@@ -12,7 +12,7 @@ class OnboardingView extends HTMLElement {
   }
 
   connectedCallback() {
-    this.user = getUser();
+    this.user = userStore.get();
 
     const currentPath = readPath();
     if (currentPath === 'onboarding' && !this.user) {
@@ -25,11 +25,11 @@ class OnboardingView extends HTMLElement {
 
     this.render();
 
-    localStore.addEventListener('localStoreChange', this.handleUserChange);
+    this.subscribe = userStore.watch(this.handleUserChange);
   }
 
   disconnectedCallback() {
-    localStore.removeEventListener('localStoreChange', this.handleUserChange);
+    if (this.unsubscribe) this.unsubscribe();
   }
 
   handleUserChange(event) {
