@@ -14,10 +14,10 @@ class SignUpView extends HTMLElement {
 
   connectedCallback() {
     this.user = userStore.get();
-    const currentPath = readPath();
 
+    const currentPath = readPath();
     if (this.user && currentPath === 'sign-up') {
-      return navigate('home');
+      navigate('home');
     }
 
     this.render();
@@ -29,15 +29,13 @@ class SignUpView extends HTMLElement {
     if (this.unsubscribe) this.unsubscribe();
   }
 
-  handleUserChange(event) {
-    if (event.detail.key === 'user') {
-      this.user = event.detail.newValue;
-      this.render();
+  handleUserChange(newUserValue) {
+    this.user = newUserValue;
+    this.render();
 
-      const currentPath = readPath();
-      if (this.user && currentPath === 'sign-up') {
-        navigate('home');
-      }
+    const currentPath = readPath();
+    if (this.user && currentPath === 'sign-up') {
+      navigate('home');
     }
   }
 

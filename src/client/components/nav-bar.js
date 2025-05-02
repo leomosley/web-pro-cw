@@ -6,10 +6,24 @@ class NavBar extends HTMLElement {
     super();
     this.attachShadow({ mode: 'open' });
     this.user = null;
+
+    this.handleUserChange = this.handleUserChange.bind(this);
+
   }
 
   connectedCallback() {
     this.user = userStore.get();
+    this.render();
+
+    this.unsubscribe = userStore.watch(this.handleUserChange);
+  }
+
+  disconnectdCallback() {
+    if (this.unsubscribe) this.unsubscribe();
+  }
+
+  handleUserChange(newUserValue) {
+    this.user = newUserValue;
     this.render();
   }
 
@@ -46,6 +60,9 @@ class NavBar extends HTMLElement {
         break;
     }
 
+    if (this.user) {
+      nav.push({ label: 'Profile', view: 'profile' });
+    }
 
     const navList = this.shadowRoot.querySelector('ul');
     for (const item of nav) {

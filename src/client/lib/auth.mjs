@@ -9,7 +9,7 @@ export const userStore = {
 
   watch(callback) {
     const handler = (event) => {
-      if (event.detail.key === USER_STORAGE_KEY) {
+      if (event.detail.key === USER_STORE_KEY) {
         callback(event.detail.newValue);
       }
     };
@@ -20,6 +20,6 @@ export const userStore = {
   },
 
   set(value) {
-    localStore.setItem(USER_STORAGE_KEY, value);
+    localStore.setItem(USER_STORE_KEY, value);
   }
 };

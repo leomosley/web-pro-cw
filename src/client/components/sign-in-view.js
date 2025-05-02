@@ -29,15 +29,13 @@ class SignInView extends HTMLElement {
     if (this.unsubscribe) this.unsubscribe();
   }
 
-  handleUserChange(event) {
-    if (event.detail.key === 'user') {
-      this.user = event.detail.newValue;
-      this.render();
+  handleUserChange(newUserValue) {
+    this.user = newUserValue;
+    this.render();
 
-      const currentPath = readPath();
-      if (this.user && currentPath === 'sign-in') {
-        navigate('home');
-      }
+    const currentPath = readPath();
+    if (this.user && currentPath === 'sign-in') {
+      navigate('home');
     }
   }
 

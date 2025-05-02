@@ -32,20 +32,19 @@ class OnboardingView extends HTMLElement {
     if (this.unsubscribe) this.unsubscribe();
   }
 
-  handleUserChange(event) {
-    if (event.detail.key === 'user') {
-      this.user = event.detail.newValue;
-      this.render();
+  handleUserChange(newUserValue) {
+    this.user = newUserValue;
+    this.render();
 
-      const currentPath = readPath();
-      if (currentPath === 'onboarding' && !this.user) {
-        return navigate('home');
-      }
-
-      if (currentPath === 'onboarding' && this.user.onboarded) {
-        return navigate('home');
-      }
+    const currentPath = readPath();
+    if (currentPath === 'onboarding' && !this.user) {
+      navigate('home');
     }
+
+    if (currentPath === 'onboarding' && this.user.onboarded) {
+      navigate('home');
+    }
+
   }
 
   render() {

@@ -16,8 +16,10 @@ class SignOutView extends HTMLElement {
     this.user = userStore.get();
     const currentPath = readPath();
 
-    if (!!this.user && currentPath === 'sign-out') {
-      return navigate('home');
+    console.log(!!this.user, currentPath);
+
+    if (!this.user && currentPath === 'sign-out') {
+      navigate('home');
     }
 
     this.render();
@@ -29,20 +31,19 @@ class SignOutView extends HTMLElement {
     if (this.unsubscribe) this.unsubscribe();
   }
 
-  handleUserChange(event) {
-    if (event.detail.key === 'user') {
-      this.user = event.detail.newValue;
-      this.render();
+  handleUserChange(newUserValue) {
+    this.user = newUserValue;
+    this.render();
 
-      const currentPath = readPath();
-      if (!this.user && currentPath === 'sign-out') {
-        navigate('home');
-      }
+    const currentPath = readPath();
+    if (!this.user && currentPath === 'sign-out') {
+      navigate('home');
     }
   }
 
   handleSignOut(event) {
     localStore.setItem('user', null);
+    navigate('home');
   }
 
   render() {
