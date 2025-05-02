@@ -16,8 +16,6 @@ class SignOutView extends HTMLElement {
     this.user = userStore.get();
     const currentPath = readPath();
 
-    console.log(!!this.user, currentPath);
-
     if (!this.user && currentPath === 'sign-out') {
       navigate('home');
     }

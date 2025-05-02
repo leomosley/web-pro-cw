@@ -44,7 +44,6 @@ class OnboardingView extends HTMLElement {
     if (currentPath === 'onboarding' && this.user.onboarded) {
       navigate('home');
     }
-
   }
 
   render() {

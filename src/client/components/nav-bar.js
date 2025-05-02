@@ -8,7 +8,6 @@ class NavBar extends HTMLElement {
     this.user = null;
 
     this.handleUserChange = this.handleUserChange.bind(this);
-
   }
 
   connectedCallback() {
