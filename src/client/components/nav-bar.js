@@ -1,12 +1,14 @@
-import { ui } from '../index.mjs';
+import { getUser, ui } from '../index.mjs';
 
 class NavBar extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: 'open' });
+    this.user = null;
   }
 
   connectedCallback() {
+    this.user = getUser();
     this.render();
   }
 
@@ -20,9 +22,29 @@ class NavBar extends HTMLElement {
 
     const nav = [
       { label: 'Home', view: 'home' },
-      { label: 'Organise', view: 'organise' },
-      { label: 'Profile', view: 'profile' },
     ];
+
+    if (!this.user) {
+      nav.push({ label: 'Sign In', view: 'sign-in' });
+    }
+
+    switch (this.user?.role) {
+      case 'participant':
+        nav.push({ label: 'Participant Page', view: 'participant' });
+        break;
+      case 'organiser':
+        nav.push({ label: 'Organise', view: 'organise' });
+        break;
+      case 'viewer':
+        nav.push({ label: 'View', view: 'viewer' });
+        break;
+      case 'volunteer':
+        nav.push({ label: 'Volunteer', view: 'volunteer' });
+        break;
+      default:
+        break;
+    }
+
 
     const navList = this.shadowRoot.querySelector('ul');
     for (const item of nav) {
