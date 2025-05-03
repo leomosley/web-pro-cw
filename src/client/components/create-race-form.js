@@ -97,7 +97,7 @@ class CreateRaceForm extends HTMLElement {
     if (finishInputValue) {
       const newCheckpoint = {
         position: this.checkpoints.length + 1,
-        name: finishInputValue
+        name: finishInputValue,
       };
       this.checkpoints.push(newCheckpoint);
       this.handles.finishCheckpointInput.value = '';
