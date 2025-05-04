@@ -5,7 +5,7 @@ class VolunteerView extends HTMLElement {
     super();
     this.attachShadow({ mode: 'open' });
 
-    this.tasks = ["checkIn", "checkOut", "checkpoint"];
+    this.tasks = ['checkIn', 'checkOut', 'checkpoint'];
     const params = new URLSearchParams(window.location.search);
     this.raceId = params.get('id');
     this.task = params.get('task');
@@ -37,11 +37,11 @@ class VolunteerView extends HTMLElement {
   }
 
   renderNotFound() {
-    this.shadowRoot.innerHTML = `<div><h1>Race Not Found</h1></div>`;
+    this.shadowRoot.innerHTML = '<div><h1>Race Not Found</h1></div>';
   }
 
   renderChooseTask() {
-    this.shadowRoot.innerHTML = `<h1>Choose Task</h1>`;
+    this.shadowRoot.innerHTML = '<h1>Choose Task</h1>';
     for (const task of this.tasks) {
       const button = document.createElement('button');
       button.textContent = task;
@@ -52,11 +52,11 @@ class VolunteerView extends HTMLElement {
         window.location.search = params.toString();
       });
       this.shadowRoot.append(button);
-    };
+    }
   }
 
   render() {
-    this.shadowRoot.innerHTML = ``;
+    this.shadowRoot.innerHTML = '';
 
     const container = document.createElement('div');
 
@@ -90,7 +90,7 @@ class VolunteerView extends HTMLElement {
           window.location.search = params.toString();
         });
         tabBar.append(button);
-      };
+      }
       container.append(tabBar);
     }
 
@@ -147,11 +147,11 @@ class VolunteerView extends HTMLElement {
   buildCheckpointContent(wrapper) {
     const header = document.createElement('h2');
     const checkpoints = [
-      { position: 1, name: "Start" },
-      { position: 2, name: "2" },
-      { position: 3, name: "3" },
-      { position: 4, name: "4" },
-      { position: 5, name: "Finish" },
+      { position: 1, name: 'Start' },
+      { position: 2, name: '2' },
+      { position: 3, name: '3' },
+      { position: 4, name: '4' },
+      { position: 5, name: 'Finish' },
     ];
 
     const validCheckpoint = this.checkpoint && (this.checkpoint > 0 && this.checkpoint <= checkpoints.length);
@@ -220,7 +220,6 @@ class VolunteerView extends HTMLElement {
         window.location.search = params.toString();
       });
       wrapper.append(button);
-      return;
     }
   }
 

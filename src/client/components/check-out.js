@@ -17,7 +17,7 @@ class CheckOut extends HTMLElement {
     `;
 
     const button = document.createElement('button');
-    button.textContent = "Check Out";
+    button.textContent = 'Check Out';
     button.addEventListener('click', this.handleClick.bind(this));
     this.shadowRoot.appendChild(button);
   }

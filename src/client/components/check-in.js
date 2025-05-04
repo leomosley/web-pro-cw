@@ -15,7 +15,7 @@ class CheckIn extends HTMLElement {
     `;
 
     const button = document.createElement('button');
-    button.textContent = "Check In";
+    button.textContent = 'Check In';
     button.addEventListener('click', this.handleClick.bind(this));
     this.shadowRoot.appendChild(button);
   }
