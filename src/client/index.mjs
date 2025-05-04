@@ -45,6 +45,10 @@ export const pages = [
   {
     view: 'onboarding',
     title: 'Onboarding'
+  },
+  {
+    view: 'volunteer',
+    title: 'Volunteer'
   }
 ];
 
