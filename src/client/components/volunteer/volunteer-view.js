@@ -1,4 +1,4 @@
-import { calculateElapsedTime, getRaceById } from '../lib/utils.mjs';
+import { calculateElapsedTime, getRaceById } from '../../lib/utils.mjs';
 
 class VolunteerView extends HTMLElement {
   constructor() {

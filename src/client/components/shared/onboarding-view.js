@@ -1,6 +1,6 @@
-import { userStore } from '../lib/auth.mjs';
-import { localStore } from '../lib/localStore.mjs';
-import { navigate, readPath } from '../lib/views.mjs';
+import { userStore } from '../../lib/auth.mjs';
+import { localStore } from '../../lib/localStore.mjs';
+import { navigate, readPath } from '../../lib/views.mjs';
 
 class OnboardingView extends HTMLElement {
   constructor() {

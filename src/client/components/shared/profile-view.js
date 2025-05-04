@@ -1,5 +1,5 @@
-import { userStore } from '../lib/auth.mjs';
-import { localStore } from '../lib/localStore.mjs';
+import { userStore } from '../../lib/auth.mjs';
+import { localStore } from '../../lib/localStore.mjs';
 
 class ProfileView extends HTMLElement {
   constructor() {

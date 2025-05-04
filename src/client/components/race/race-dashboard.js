@@ -1,4 +1,4 @@
-import { getRaceById } from '../lib/utils.mjs';
+import { getRaceById } from '../../lib/utils.mjs';
 
 class RaceDashboard extends HTMLElement {
   constructor() {

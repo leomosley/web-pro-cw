@@ -1,5 +1,4 @@
 import { getContent, loadInitialView } from "./lib/views.mjs";
-import { localStore } from "./lib/localStore.mjs";
 
 export const pages = [
   {

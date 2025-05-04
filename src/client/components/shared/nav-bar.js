@@ -1,5 +1,5 @@
-import { ui } from '../index.mjs';
-import { userStore } from '../lib/auth.mjs';
+import { ui } from '../../index.mjs';
+import { userStore } from '../../lib/auth.mjs';
 
 class NavBar extends HTMLElement {
   constructor() {

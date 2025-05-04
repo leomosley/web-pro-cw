@@ -1,5 +1,5 @@
-import { localStore } from '../lib/localStore.mjs';
-import { generateRandomId } from '../lib/utils.mjs';
+import { localStore } from '../../lib/localStore.mjs';
+import { generateRandomId } from '../../lib/utils.mjs';
 
 class GenerateParticipantIDButton extends HTMLElement {
   constructor() {

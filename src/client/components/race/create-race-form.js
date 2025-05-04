@@ -1,4 +1,4 @@
-import { localStore } from '../lib/localStore.mjs';
+import { localStore } from '../../lib/localStore.mjs';
 
 class CreateRaceForm extends HTMLElement {
   constructor() {

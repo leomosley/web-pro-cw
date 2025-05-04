@@ -1,4 +1,4 @@
-import { localStore } from "../lib/localStore.mjs";
+import { localStore } from "../../lib/localStore.mjs";
 
 class RaceList extends HTMLElement {
   constructor() {
