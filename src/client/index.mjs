@@ -48,7 +48,11 @@ export const pages = [
   {
     view: 'volunteer',
     title: 'Volunteer'
-  }
+  },
+  {
+    view: 'view',
+    title: 'Viewer'
+  },
 ];
 
 export const templates = {};

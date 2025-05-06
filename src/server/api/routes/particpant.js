@@ -1,5 +1,10 @@
 import { db } from '../../db/index.js';
-import { generateRandomId } from '../../../lib/utils.js';
+
+function generateRandomId() {
+  const randomChar = String.fromCharCode(Math.floor(Math.random() * 26) + 65);
+  const randomDigits = Math.floor(1000 + Math.random() * 9000);
+  return randomChar + randomDigits;
+}
 
 
 export async function getAllParticipants(request, reply) {

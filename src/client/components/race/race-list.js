@@ -1,5 +1,3 @@
-import { localStore } from "../../lib/localStore.mjs";
-
 class RaceList extends HTMLElement {
   constructor() {
     super();
@@ -7,26 +5,16 @@ class RaceList extends HTMLElement {
     this.races = [];
   }
 
-  connectedCallback() {
-    this.loadRaces();
-    window.addEventListener("storage", this.handleStorageChange);
+  async connectedCallback() {
+    await this.loadRaces();
     this.render();
   }
 
-  disconnectedCallback() {
-    window.removeEventListener("storage", this.handleStorageChange);
-  }
-
-  handleStorageChange = (event) => {
-    if (event.key === "race") {
-      this.loadRaces();
-      this.render();
-    }
-  };
-
-  loadRaces() {
-    const storedRaces = localStore.getItem("race");
-    this.races = storedRaces ?? [];
+  async loadRaces() {
+    const response = await fetch('/api/race');
+    const data = await response.json();
+    console.log(data);
+    this.races = data ?? [];
   }
 
   render() {

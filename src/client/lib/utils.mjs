@@ -82,3 +82,52 @@ export function setUserOnboarded(onboarded) {
     newValue: onboarded
   }
 }
+
+export async function fetchWrapper(url) {
+  const localStorageKey = `fetchFallback_${url}`; // Unique key for localStorage
+
+  try {
+    const apiResponse = await fetch(url);
+
+    if (!apiResponse.ok) {
+      throw new Error(`API request failed with status ${apiResponse.status}`);
+    }
+
+    const apiData = await apiResponse.json();
+
+    try {
+      localStorage.setItem(localStorageKey, JSON.stringify(apiData));
+    } catch (localStorageError) {
+      console.warn(
+        "fetchWithFallback: Could not save data to localStorage:",
+        localStorageError
+      );
+    }
+
+    return apiData;
+  } catch (apiError) {
+    console.error("fetchWithFallback: API request failed:", apiError);
+
+    console.log(
+      `fetchWithFallback: Attempting to retrieve data from localStorage for ${url}`
+    );
+    const localStorageData = localStorage.getItem(localStorageKey);
+
+    if (localStorageData) {
+      try {
+        return JSON.parse(localStorageData);
+      } catch (parseError) {
+        console.error(
+          "fetchWithFallback: Failed to parse data from localStorage:",
+          parseError
+        );
+        throw new Error(
+          `Failed to fetch data from API and failed to parse data from localStorage for ${url}`
+        );
+      }
+    } else {
+      console.warn(`fetchWithFallback: No data found in localStorage for ${url}`);
+      throw new Error(`Failed to fetch data from API and no data found in localStorage for ${url}`);
+    }
+  }
+}

@@ -2,6 +2,7 @@ import Fastify from 'fastify';
 import url from 'url';
 import fastifyStatic from '@fastify/static';
 import path from 'path';
+import { createAPIRoute, routes } from './api/routes/index.js';
 
 // Sets root dirname to start at `src`
 const __dirname = url.fileURLToPath(new URL('..', import.meta.url));
@@ -18,10 +19,6 @@ async function main() {
     root: path.join(__dirname, 'client'),
   });
 
-  app.get('/api/*', async (request, reply) => {
-    return { message: 'API route' };
-  });
-
   app.get('/', async (request, reply) => {
     return reply.redirect('/app/');
   });
@@ -33,6 +30,10 @@ async function main() {
   app.get('/app/*', async (request, reply) => {
     return reply.sendFile('index.html');
   });
+
+  for (const route of routes) {
+    createAPIRoute(app, route);
+  }
 
   // Start the server
   try {
