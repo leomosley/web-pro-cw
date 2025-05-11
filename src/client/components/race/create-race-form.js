@@ -146,7 +146,7 @@ class CreateRaceForm extends HTMLElement {
       li.appendChild(input);
       li.appendChild(deleteButton);
       this.handles.checkpointList.appendChild(li);
-    };
+    }
   }
 
 

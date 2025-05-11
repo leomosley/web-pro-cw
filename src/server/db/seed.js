@@ -1,5 +1,5 @@
 import { Database } from 'sqlite';
-import { db } from './index.js'
+import { db } from './index.js';
 
 export async function seed(db) {
   if (!(db instanceof Database)) {
@@ -36,8 +36,8 @@ export async function seed(db) {
     await db.run("INSERT INTO participant (participant_id) VALUES ('P1241');");
     await db.run("INSERT INTO participant (participant_id) VALUES ('P1214');");
     await db.run("INSERT INTO participant (participant_id) VALUES ('P1511');");
-    await db.run("INSERT INTO participant (participant_id) VALUES ('P1600');")
-    await db.run("INSERT INTO participant (participant_id) VALUES ('P1700');")
+    await db.run("INSERT INTO participant (participant_id) VALUES ('P1600');");
+    await db.run("INSERT INTO participant (participant_id) VALUES ('P1700');");
     console.log('Inserted participants');
 
     await db.run("INSERT INTO race_participant (race_id, participant_id, checked_in) VALUES ('R1234', 'P1241', FALSE);");
@@ -45,8 +45,8 @@ export async function seed(db) {
     await db.run("INSERT INTO race_participant (race_id, participant_id, checked_in) VALUES ('R1234', 'P1214', FALSE);");
     await db.run("INSERT INTO race_participant (race_id, participant_id, checked_in) VALUES ('R1235', 'P1214', FALSE);");
     await db.run("INSERT INTO race_participant (race_id, participant_id, checked_in) VALUES ('R1234', 'P1511', FALSE);");
-    await db.run("INSERT INTO race_participant (race_id, participant_id, checked_in) VALUES ('R1234', 'P1600', FALSE);")
-    await db.run("INSERT INTO race_participant (race_id, participant_id, checked_in) VALUES ('R1234', 'P1700', FALSE);")
+    await db.run("INSERT INTO race_participant (race_id, participant_id, checked_in) VALUES ('R1234', 'P1600', FALSE);");
+    await db.run("INSERT INTO race_participant (race_id, participant_id, checked_in) VALUES ('R1234', 'P1700', FALSE);");
     console.log('Inserted initial race participants');
 
     await db.run(`

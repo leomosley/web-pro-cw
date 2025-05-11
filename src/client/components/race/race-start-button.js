@@ -6,7 +6,7 @@ class RaceStartButton extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({
-      mode: 'open'
+      mode: 'open',
     });
     this.button = null;
     this._raceId = null;
@@ -67,7 +67,7 @@ class RaceStartButton extends HTMLElement {
     const stopUrl = `/api/race/${this._raceId}/stop`;
     const body = {
       race_start_time: currentTime,
-      race_date: currentDate
+      race_date: currentDate,
     };
 
     try {
@@ -86,8 +86,8 @@ class RaceStartButton extends HTMLElement {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           race_end_time: null,
-          race_date: currentDate
-        })
+          race_date: currentDate,
+        }),
       });
 
       if (!stopResponse.ok) {
@@ -101,13 +101,12 @@ class RaceStartButton extends HTMLElement {
       this.updateButtonState();
 
       this.dispatchEvent(new CustomEvent('race-started', {
-        detail: { time: currentTime, apiResponse: result }
+        detail: { time: currentTime, apiResponse: result },
       }));
-
     } catch (error) {
       console.error('Error starting race:', error);
       this.dispatchEvent(new CustomEvent('race-start-error', {
-        detail: { error: error.message }
+        detail: { error: error.message },
       }));
     } finally {
       this._isProcessing = false;
@@ -134,7 +133,7 @@ class RaceStartButton extends HTMLElement {
     const url = `/api/race/${this._raceId}/stop`;
     const body = {
       race_end_time: currentTime,
-      race_date: currentDate
+      race_date: currentDate,
     };
 
     try {
@@ -155,13 +154,12 @@ class RaceStartButton extends HTMLElement {
       this.updateButtonState();
 
       this.dispatchEvent(new CustomEvent('race-stopped', {
-        detail: { time: currentTime, apiResponse: result }
+        detail: { time: currentTime, apiResponse: result },
       }));
-
     } catch (error) {
       console.error('Error stopping race:', error);
       this.dispatchEvent(new CustomEvent('race-stop-error', {
-        detail: { error: error.message }
+        detail: { error: error.message },
       }));
     } finally {
       this._isProcessing = false;

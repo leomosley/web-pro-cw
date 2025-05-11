@@ -1,6 +1,6 @@
 import {
   calculateElapsedTime,
-  getRaceById
+  getRaceById,
 } from '../../lib/utils.mjs';
 
 
@@ -8,7 +8,7 @@ class VolunteerView extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({
-      mode: 'open'
+      mode: 'open',
     });
 
     this.tasks = ['checkIn', 'checkOut', 'checkpoint'];
@@ -91,13 +91,15 @@ class VolunteerView extends HTMLElement {
                 <p>Race date: ${this.race ? this.race.race_date : 'N/A'}</p>
                 <p>Scheduled Race Start Time: ${this.race && this.race.race_start_time && typeof this.race.race_start_time === 'string' ? this.race.race_start_time : 'N/A'}</p>
                 <p>Waiting for the race to start...</p>
-                ${this.task ? `
+                ${this.task
+? `
                    <div>
                      <button data-task="checkIn">Go to Check-in</button>
                      <button data-task="checkOut" disabled>Check Out (Race not started)</button>
                      <button data-task="checkpoint" disabled>Checkpoint (Race not started)</button>
                    </div>
-                ` : ''}
+                `
+: ''}
             </div>
         `;
     this.shadowRoot.querySelectorAll('button[data-task]').forEach(button => {

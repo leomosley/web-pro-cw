@@ -1,13 +1,13 @@
 import {
   getRaceById,
-  convertTimeToTimestamp // Assuming this returns a number (timestamp)
+  convertTimeToTimestamp, // Assuming this returns a number (timestamp)
 } from '../../lib/utils.mjs';
 
 class RaceDashboard extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({
-      mode: 'open'
+      mode: 'open',
     });
     this.raceId = new URLSearchParams(window.location.search).get('id');
     this.race = null;
@@ -131,7 +131,7 @@ class RaceDashboard extends HTMLElement {
     if (startEl) startEl.textContent = `Race Start Time: ${time}`;
 
     const endEl = this.shadowRoot.getElementById('race-end-time');
-    if (endEl) endEl.textContent = `Race End Time: Not ended yet`;
+    if (endEl) endEl.textContent = 'Race End Time: Not ended yet';
 
     // **Start the timer by setting the start-time attribute:**
     if (this.raceTimerElement && this.startTimeStamp !== null) {
@@ -156,7 +156,7 @@ class RaceDashboard extends HTMLElement {
     if (endEl && this.raceActualEndTime !== null) {
       endEl.textContent = `Race End Time: ${new Date(this.raceActualEndTime).toLocaleTimeString()}`;
     } else if (endEl) {
-      endEl.textContent = `Race End Time: Not ended yet`;
+      endEl.textContent = 'Race End Time: Not ended yet';
     }
   }
 
@@ -169,7 +169,6 @@ class RaceDashboard extends HTMLElement {
     const { error } = event.detail;
     console.error('Race stop error received in dashboard:', error);
   }
-
 }
 
 customElements.define('race-dashboard', RaceDashboard);

@@ -30,7 +30,7 @@ export async function createRace(request, reply) {
     const checkpointResponse = await db.run(
       `INSERT INTO race_checkpoint (race_id, checkpoint_position, checkpoint_name) VALUES
        (?, ?, ?);`
-      , [race_id, checkpoint.position, checkpoint.name]
+      , [race_id, checkpoint.position, checkpoint.name],
     );
 
     if (!checkpointResponse) throw new Error('Error creating checkpoint');
@@ -50,7 +50,7 @@ export async function getRace(request, reply) {
   if (!race) throw new Error('Not found');
 
   response = {
-    ...race
+    ...race,
   };
 
   if (checkpoints) {
@@ -58,16 +58,16 @@ export async function getRace(request, reply) {
 
     response = {
       ...response,
-      race_checkpoint
-    }
+      race_checkpoint,
+    };
   }
 
   if (participants) {
     const race_participant = await db.all('SELECT * FROM race_participant WHERE race_id=?', [id]);
     response = {
       ...response,
-      race_participant
-    }
+      race_participant,
+    };
   }
 
   return response;

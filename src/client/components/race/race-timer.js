@@ -33,7 +33,7 @@ class RaceTimer extends HTMLElement {
   }
 
   render() {
-    this.shadowRoot.innerHTML = `<span>00:00:00</span>`;
+    this.shadowRoot.innerHTML = '<span>00:00:00</span>';
   }
 
   startTimer() {
