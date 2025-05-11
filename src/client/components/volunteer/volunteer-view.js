@@ -1,9 +1,15 @@
-import { calculateElapsedTime, getRaceById } from '../../lib/utils.mjs';
+import {
+  calculateElapsedTime,
+  getRaceById
+} from '../../lib/utils.mjs';
+
 
 class VolunteerView extends HTMLElement {
   constructor() {
     super();
-    this.attachShadow({ mode: 'open' });
+    this.attachShadow({
+      mode: 'open'
+    });
 
     this.tasks = ['checkIn', 'checkOut', 'checkpoint'];
     const params = new URLSearchParams(window.location.search);
@@ -13,31 +19,54 @@ class VolunteerView extends HTMLElement {
 
     this.race = null;
     this.raceTimerElement = null;
-    this.autoStartTimer = null;
-    this.positions = [];
+
+    this.scheduledCheckInTime = null;
   }
 
-  connectedCallback() {
-    if (!this.raceId) return this.renderNotFound();
-    this.race = getRaceById(this.raceId);
-    if (!this.race) return this.renderNotFound();
+  async connectedCallback() {
+    if (!this.raceId) {
+      this.renderNotFound();
+      return;
+    }
+
+    await this.fetchRaceData();
+
+    if (!this.race) return;
+
+    const raceStarted = this.race.race_start_time && typeof this.race.race_start_time === 'number';
+
 
     if (!this.task || !this.tasks.includes(this.task)) {
       return this.renderChooseTask();
     }
 
+    if ((this.task === 'checkOut' || this.task === 'checkpoint') && !raceStarted) {
+      this.renderWaitingForStart();
+      return;
+    }
+
+
     this.render();
-    this.checkAndAutoStartRace();
   }
 
-  disconnectedCallback() {
-    if (this.autoStartTimer) {
-      clearTimeout(this.autoStartTimer);
+
+  async fetchRaceData() {
+    const result = await getRaceById(this.raceId, true, true);
+
+    if (!result.success) {
+      this.renderNotFound();
+      this.race = null;
+      return false;
     }
+
+    this.race = result.race;
+    this.parseScheduledCheckInTime();
+    console.log('Race data fetched for volunteer:', this.race);
+    return true;
   }
 
   renderNotFound() {
-    this.shadowRoot.innerHTML = '<div><h1>Race Not Found</h1></div>';
+    this.shadowRoot.innerHTML = '<div><h1>Race Not Found</h1><p>The race with ID ${this.raceId} could not be loaded.</p></div>';
   }
 
   renderChooseTask() {
@@ -55,7 +84,64 @@ class VolunteerView extends HTMLElement {
     }
   }
 
+  renderWaitingForStart() {
+    this.shadowRoot.innerHTML = `
+            <div>
+                <h1>${this.race ? this.race.race_name : 'Race'}</h1>
+                <p>Race date: ${this.race ? this.race.race_date : 'N/A'}</p>
+                <p>Scheduled Race Start Time: ${this.race && this.race.race_start_time && typeof this.race.race_start_time === 'string' ? this.race.race_start_time : 'N/A'}</p>
+                <p>Waiting for the race to start...</p>
+                ${this.task ? `
+                   <div>
+                     <button data-task="checkIn">Go to Check-in</button>
+                     <button data-task="checkOut" disabled>Check Out (Race not started)</button>
+                     <button data-task="checkpoint" disabled>Checkpoint (Race not started)</button>
+                   </div>
+                ` : ''}
+            </div>
+        `;
+    this.shadowRoot.querySelectorAll('button[data-task]').forEach(button => {
+      button.addEventListener('click', () => {
+        const task = button.dataset.task;
+        if (task === 'checkIn' || !button.disabled) {
+          const params = new URLSearchParams(window.location.search);
+          params.set('task', task);
+          params.delete('checkpoint'); // Clear checkpoint when switching tasks
+          window.location.search = params.toString();
+        }
+      });
+    });
+  }
+
+
+  parseScheduledCheckInTime() {
+    if (!this.race || !this.race.race_date || !this.race.check_in_open_time) {
+      console.warn('Missing required race data to parse scheduled check-in time.');
+      this.scheduledCheckInTime = null;
+      return;
+    }
+
+    try {
+      const raceDate = new Date(this.race.race_date);
+      if (isNaN(raceDate.getTime())) throw new Error('Invalid race date format.');
+      const [checkInHours, checkInMinutes] = this.race.check_in_open_time.split(':').map(Number);
+      if (checkInHours === undefined || checkInMinutes === undefined) throw new Error('Invalid check-in time format (expected hh:mm).');
+      this.scheduledCheckInTime = new Date(raceDate.getFullYear(), raceDate.getMonth(), raceDate.getDate(), checkInHours, checkInMinutes, 0);
+      const now = Date.now();
+      const oneDay = 24 * 60 * 60 * 1000;
+      if (this.scheduledCheckInTime.getTime() < now - oneDay) {
+        console.warn('Scheduled check-in time is more than a day in the past. It might be for a future date.');
+      }
+    } catch (error) {
+      console.error('Error parsing scheduled check-in time:', error);
+      this.scheduledCheckInTime = null;
+    }
+  }
+
+
   render() {
+    if (!this.race) return;
+
     this.shadowRoot.innerHTML = '';
 
     const container = document.createElement('div');
@@ -64,35 +150,54 @@ class VolunteerView extends HTMLElement {
     title.textContent = this.race.race_name;
     container.append(title);
 
-    const now = new Date();
-    const offset = Math.random() > 0.5 ? 0 : 30;
+    const raceDateElem = document.createElement('p');
+    raceDateElem.textContent = `Race date: ${this.race.race_date}`;
+    container.append(raceDateElem);
 
-    this.startTime = new Date(now.getTime() + (offset * 60000));
-    this.checkInTime = new Date((this.startTime.getTime() - 20) * 60000);
+    const checkInTimeElem = document.createElement('p');
+    checkInTimeElem.textContent = `Scheduled Check In Open Time: ${this.scheduledCheckInTime ? this.scheduledCheckInTime.toLocaleTimeString() : 'N/A'}`;
+    container.append(checkInTimeElem);
 
     const startTimeElem = document.createElement('p');
-    startTimeElem.textContent = `Race Start Time: ${this.startTime.toLocaleTimeString()}`;
+    startTimeElem.textContent = `Race Start Time: ${this.race.race_start_time ? new Date(this.race.race_start_time).toLocaleTimeString() : 'Not started yet'}`;
     container.append(startTimeElem);
 
+    const endTimeElem = document.createElement('p');
+    endTimeElem.textContent = `Race End Time: ${this.race.race_end_time ? new Date(this.race.race_end_time).toLocaleTimeString() : 'Not ended yet'}`;
+    container.append(endTimeElem);
+
     this.raceTimerElement = document.createElement('race-timer');
-    this.raceTimerElement.setAttribute('start-time', this.startTime.getTime());
+    // Pass the actual start time (timestamp) to the timer only if race has started and not ended
+    if (this.race.race_start_time && typeof this.race.race_start_time === 'number' && !this.race.race_end_time) {
+      this.raceTimerElement.setAttribute('start-time', this.race.race_start_time);
+    }
     container.append(this.raceTimerElement);
 
-    if (this.task) {
-      const tabBar = document.createElement('div');
-      for (const task of this.tasks) {
-        const button = document.createElement('button');
-        button.textContent = task;
-        button.dataset.task = task;
-        button.addEventListener('click', () => {
-          const params = new URLSearchParams(window.location.search);
-          params.set('task', task);
-          window.location.search = params.toString();
-        });
-        tabBar.append(button);
+
+    const tabBar = document.createElement('div');
+    for (const task of this.tasks) {
+      const button = document.createElement('button');
+      button.textContent = task;
+      button.dataset.task = task;
+      const raceStarted = this.race.race_start_time && typeof this.race.race_start_time === 'number';
+      if ((task === 'checkOut' || task === 'checkpoint') && !raceStarted) {
+        button.disabled = true;
       }
-      container.append(tabBar);
+
+      button.addEventListener('click', () => {
+        const params = new URLSearchParams(window.location.search);
+        params.set('task', task);
+        if (this.checkpoint && task === 'checkpoint') {
+          params.set('checkpoint', this.checkpoint);
+        } else {
+          params.delete('checkpoint');
+        }
+        window.location.search = params.toString();
+      });
+      tabBar.append(button);
     }
+    container.append(tabBar);
+
 
     const taskContentWrapper = document.createElement('div');
     taskContentWrapper.dataset.section = 'task-content';
@@ -117,11 +222,12 @@ class VolunteerView extends HTMLElement {
   }
 
   buildCheckInContent(wrapper) {
-    const now = new Date();
+    const now = Date.now();
+    const startTimeTimestamp = this.race.race_start_time && typeof this.race.race_start_time === 'number' ? this.race.race_start_time : Infinity;
 
-    if (now < this.checkInTime) {
+    if (this.scheduledCheckInTime && now < this.scheduledCheckInTime.getTime()) {
       wrapper.append(this.createText('Check-in is not open yet.'));
-    } else if (now >= this.startTime) {
+    } else if (now >= startTimeTimestamp) {
       wrapper.append(this.createText('Check-in is closed. The race has already started.'));
     } else {
       wrapper.append(this.createText('Check-in is open!'));
@@ -132,28 +238,15 @@ class VolunteerView extends HTMLElement {
   }
 
   buildCheckOutContent(wrapper) {
-    const now = new Date();
-
-    if (now < this.startTime) {
-      wrapper.append(this.createText('Check-out not available. The race hasn’t started yet.'));
-    } else {
-      wrapper.append(this.createText('Check-out available.'));
-      const checkOut = document.createElement('check-out');
-      checkOut.setAttribute('raceId', this.raceId);
-      wrapper.append(checkOut);
-    }
+    wrapper.append(this.createText('Check-out available.'));
+    const checkOut = document.createElement('check-out');
+    checkOut.setAttribute('raceId', this.raceId);
+    wrapper.append(checkOut);
   }
 
   buildCheckpointContent(wrapper) {
     const header = document.createElement('h2');
-    const checkpoints = [
-      { position: 1, name: 'Start' },
-      { position: 2, name: '2' },
-      { position: 3, name: '3' },
-      { position: 4, name: '4' },
-      { position: 5, name: 'Finish' },
-    ];
-
+    const checkpoints = this.race.race_checkpoint;
     const validCheckpoint = this.checkpoint && (this.checkpoint > 0 && this.checkpoint <= checkpoints.length);
 
     header.textContent = validCheckpoint ? `Checkpoint ${this.checkpoint}` : 'Choose checkpoint';
@@ -164,10 +257,11 @@ class VolunteerView extends HTMLElement {
       for (const checkpoint of checkpoints) {
         const li = document.createElement('li');
         const button = document.createElement('button');
-        button.textContent = checkpoint.name;
+        button.textContent = checkpoint.checkpoint_name;
         button.addEventListener('click', () => {
           const params = new URLSearchParams(window.location.search);
-          params.set('checkpoint', checkpoint.position);
+          params.set('task', this.task);
+          params.set('checkpoint', checkpoint.checkpoint_position);
           window.location.search = params.toString();
         });
         li.append(button);
@@ -177,7 +271,6 @@ class VolunteerView extends HTMLElement {
       return;
     }
 
-
     if (this.checkpoint === checkpoints.length) {
       wrapper.innerHTML += `
         <h2>Finish</h2>
@@ -186,9 +279,10 @@ class VolunteerView extends HTMLElement {
       const recordFinish = document.createElement('button');
       recordFinish.textContent = 'Record Finish';
       recordFinish.addEventListener('click', () => {
-        const now = new Date();
-        const time = calculateElapsedTime(this.startTime, now.getTime());
-        this.positions.push(time);
+        const now = Date.now();
+        // Use race.race_start_time (timestamp) which is guaranteed to exist here
+        const time = calculateElapsedTime(this.race.race_start_time, now);
+        this.positions.push(time); // positions needs to be stored somewhere persistent for a real app
         this.renderPositionsList(wrapper);
       });
       wrapper.append(recordFinish);
@@ -213,10 +307,11 @@ class VolunteerView extends HTMLElement {
         <span>This is the start of the race.</span>
       `;
       const button = document.createElement('button');
-      button.textContent = 'Check In Runners';
+      button.textContent = 'Go to Check-in';
       button.addEventListener('click', () => {
         const params = new URLSearchParams(window.location.search);
         params.set('task', 'checkIn');
+        params.delete('checkpoint');
         window.location.search = params.toString();
       });
       wrapper.append(button);
@@ -238,52 +333,10 @@ class VolunteerView extends HTMLElement {
     wrapper.append(positionList);
   }
 
-  createTimeLabel(label, value) {
-    const el = document.createElement('p');
-    el.textContent = `${label}: ${value}`;
-    return el;
-  }
-
   createText(text) {
     const el = document.createElement('p');
     el.textContent = text;
     return el;
-  }
-
-  checkAndAutoStartRace() {
-    if (!this.startTime || !this.raceTimerElement) return;
-
-    const now = Date.now();
-    const delay = this.startTime - now;
-
-    if (delay <= 0) {
-      this.startRace();
-    } else {
-      this.autoStartTimer = setTimeout(() => {
-        this.startRace();
-        console.log('Race started automatically.');
-      }, delay);
-    }
-  }
-
-  startRace() {
-    if (this.raceTimerElement?.timerInterval) {
-      console.log('Race timer is already running.');
-    } else {
-      this.raceTimerElement.startTime = Date.now();
-      this.raceTimerElement.saveStartTime();
-      this.raceTimerElement.startTimer();
-      console.log('Race started manually.');
-    }
-  }
-
-  stopRace() {
-    if (this.raceTimerElement?.timerInterval) {
-      this.raceTimerElement.stopTimer();
-      console.log('Race stopped manually.');
-    } else {
-      console.log('Race timer is already stopped or missing.');
-    }
   }
 }
 

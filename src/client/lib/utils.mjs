@@ -24,6 +24,16 @@ export function calculateElapsedTime(startTime, endTime) {
   return formatTime(elapsed);
 }
 
+export function convertTimeToTimestamp(timeStr) {
+  if (!timeStr) return null;
+
+  const [hours, minutes, seconds] = timeStr.split(':').map(Number);
+
+  const date = new Date();
+  date.setHours(hours ?? 0, minutes ?? 0, seconds ?? 0, 0);
+  return date.getTime();
+}
+
 export function generateRandomId() {
   const randomChar = String.fromCharCode(Math.floor(Math.random() * 26) + 65);
   const randomDigits = Math.floor(1000 + Math.random() * 9000);
@@ -36,10 +46,42 @@ export function toBinaryString(string) {
     .join(' ');
 }
 
-export function getRaceById(raceId) {
-  const races = localStore.getItem('race') ?? [];
-  const filtred = races.filter((race) => race.race_id === Number(raceId));
-  return filtred[0] ?? null;
+export async function getRaceById(raceId, checkpoints = false, participants = false) {
+  try {
+    if (!raceId || raceId.length < 5) {
+      throw new Error("Please provide a valid raceId");
+    }
+
+    let url = `/api/race/${raceId}?`;
+
+    if (checkpoints) {
+      url += `&checkpoints=${checkpoints}`
+    }
+
+    if (participants) {
+      url += `&participants=${participants}`
+    }
+
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`Error fetching race: ${response.status}`);
+    }
+
+    const race = await response.json();
+
+    return {
+      success: true,
+      race,
+      error: null
+    }
+  } catch (error) {
+    return {
+      success: false,
+      race: null,
+      error: String(error)
+    }
+  }
 }
 
 export function setUserRole(role) {

@@ -13,7 +13,6 @@ class RaceList extends HTMLElement {
   async loadRaces() {
     const response = await fetch('/api/race');
     const data = await response.json();
-    console.log(data);
     this.races = data ?? [];
   }
 

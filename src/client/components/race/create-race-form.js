@@ -16,7 +16,7 @@ class CreateRaceForm extends HTMLElement {
     this.saveStepData = this.saveStepData.bind(this);
     this.loadStepData = this.loadStepData.bind(this);
     this.updateButtonVisibility = this.updateButtonVisibility.bind(this);
-    this.cacheHandles = this.cacheHandles.bind(this);
+    this.getHandles = this.getHandles.bind(this);
     this.handleAddCheckpoint = this.handleAddCheckpoint.bind(this);
     this.handleDeleteCheckpoint = this.handleDeleteCheckpoint.bind(this);
     this.renderCheckpoints = this.renderCheckpoints.bind(this);
@@ -33,12 +33,12 @@ class CreateRaceForm extends HTMLElement {
     this.render();
   }
 
-  cacheHandles() {
+  getHandles() {
     this.handles.stepSections = this.shadowRoot.querySelectorAll('section[data-step]');
     this.handles.prevButton = this.shadowRoot.querySelector('[data-type="prev"]');
     this.handles.nextButton = this.shadowRoot.querySelector('[data-type="next"]');
     this.handles.submitButton = this.shadowRoot.querySelector('[data-type="submit"]');
-    this.handles.addCheckpointButton = this.shadowRoot.querySelector('.add-checkpoint-button');
+    this.handles.addCheckpointButton = this.shadowRoot.querySelector('[data-type="add-checkpoint"]');
     this.handles.checkpointList = this.shadowRoot.querySelector('section[data-step="2"] ol');
     this.handles.finishCheckpointInput = this.shadowRoot.querySelector('section[data-step="2"] input[placeholder="Finish"]');
   }
@@ -52,6 +52,8 @@ class CreateRaceForm extends HTMLElement {
         this.formData[input.name] = input.value;
       }
     }
+
+    this.formData.checkpoints = this.checkpoints;
   }
 
   loadStepData() {
@@ -109,8 +111,9 @@ class CreateRaceForm extends HTMLElement {
     const button = event.target;
     const positionToDelete = parseInt(button.dataset.position, 10);
 
-    this.checkpoints = this.checkpoints.filter(cp => cp.position !== positionToDelete)
-      .map((cp, index) => ({ position: index + 1, name: cp.name }));
+    this.checkpoints = this.checkpoints
+      .filter(checkpoint => checkpoint.position !== positionToDelete)
+      .map((checkpoint, index) => ({ position: index + 1, name: checkpoint.name }));
 
     this.renderCheckpoints();
   }
@@ -128,99 +131,93 @@ class CreateRaceForm extends HTMLElement {
     this.handles.checkpointList.appendChild(startCheckpointLi);
 
 
-    this.checkpoints.forEach(cp => {
+    for (const checkpoint of this.checkpoints) {
       const li = document.createElement('li');
       const input = document.createElement('input');
       input.type = 'text';
-      input.value = cp.name;
-      input.setAttribute('data-position', cp.position); // Keep position on input if needed
+      input.value = checkpoint.name;
+      input.setAttribute('data-position', checkpoint.position); // Keep position on input if needed
 
       const deleteButton = document.createElement('button');
       deleteButton.textContent = 'Delete';
-      deleteButton.setAttribute('data-position', cp.position);
+      deleteButton.setAttribute('data-position', checkpoint.position);
       deleteButton.addEventListener('click', this.handleDeleteCheckpoint);
 
       li.appendChild(input);
       li.appendChild(deleteButton);
       this.handles.checkpointList.appendChild(li);
-    });
+    };
   }
 
 
   async handleSubmit() {
     this.saveStepData();
 
-    const races = localStore.getItem('race') ?? [];
-    const raceId = races.length + 1;
-
-    const data = {
-      race_id: raceId,
-      location_id: 1,
-      ...this.formData,
-    };
-
-    data.checkpoints = this.checkpoints;
+    console.log(this.formData);
 
     try {
       const response = await fetch('/api/race', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body: JSON.stringify(this.formData),
       });
 
       if (!response.ok) throw new Error('API request failed');
+
+      const raceId = await response.text();
+
+      this.resetForm();
+      window.location.href = `/app/organise/race?id=${raceId}`;
     } catch (error) {
       console.error('API error, saving to local storage:', error);
-
-      const currentRaces = localStore.getItem('race') ?? [];
-      localStore.setItem('race', [...currentRaces, data]);
-    } finally {
-      this.resetForm();
-      window.location.href = `/app/organise/race?&id=${raceId}`;
     }
   }
 
   render() {
     this.shadowRoot.innerHTML = `
-      <style>
-        .hidden {
-          display: none !important;
-        }
-      </style>
-      <div style="display: flex; flex-direction: column;">
+      <main style="display: flex; flex-direction: column;">
         <section style="display: ${this.currentStep === 1 ? 'flex' : 'none'}; flex-direction: column" data-step="1">
           <h1>Race Details</h1>
-          <label for="race-name">Race Name</label>
-          <input name="race-name" type="text" />
+          <label for="race_name">Race Name</label>
+          <input name="race_name" type="text" />
 
-          <label for="race-date">Date</label>
-          <input name="race-date" type="text" />
+          <label for="race_date">Date</label>
+          <input name="race_date" type="date" />
 
-          <label for="check-in-open-time">Check in time</label>
-          <input name="check-in-open-time" type="text" />
+          <label for="check_in_open_time">Check in time</label>
+          <input name="check_in_open_time" type="time" />
 
-          <label for="race-start-time">Race start time</label>
-          <input name="race-start-time" type="text" />
+          <label for="race_start_time">Race start time</label>
+          <input name="race_start_time" type="time" />
 
-          <label for="race-address">Address</label>
-          <input name="race-address" type="text" />
-          <span>Define the start location for the race.</span>
+          <h2>Race Address</h2>
+          <label for="address_line_1">Address Line 1</label>
+          <input name="address_line_1" type="text" />
+
+          <label for="address_line_2">Address Line 2</label>
+          <input name="address_line_2" type="text" />
+
+          <label for="city">Town/City</label>
+          <input name="city" type="text" />
+
+          <label for="postcode">Postcode</label>
+          <input name="postcode" type="text" />
         </section>
         <section style="display: ${this.currentStep === 2 ? 'flex' : 'none'}; flex-direction: column" data-step="2">
           <h1>Checkpoints</h1>
           <ol></ol>
           <input placeholder="Finish" type="text" />
-          <button class="add-checkpoint-button">Add checkpoints</button>
+          <button data-type="add-checkpoint">Add checkpoints</button>
         </section>
         <footer>
           <button data-type="prev">Prev</button>
           <button data-type="next">Next</button>
           <button data-type="submit">Submit</button>
         </footer>
-      </div>
+      </main>
     `;
 
-    this.cacheHandles();
+    this.getHandles();
 
     this.handles.nextButton.addEventListener('click', this.handleNext);
     this.handles.prevButton.addEventListener('click', this.handlePrev);

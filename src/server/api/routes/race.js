@@ -1,39 +1,76 @@
 import { db } from '../../db/index.js';
+import { generateRandomId } from '../../utils.mjs';
 
 export async function getAllRaces(request, reply) {
   return await db.all('SELECT * FROM race;');
 }
 
+async function generateRaceId() {
+  while (true) {
+    const id = generateRandomId('R');
+
+    const checkRace = await db.get('SELECT 1 FROM race WHERE race_id = ?', [id]);
+
+    if (!checkRace) return id;
+  }
+}
+
 export async function createRace(request, reply) {
-  const { location_id, race_name, race_date, check_in_open_time, race_start_time } = request.body;
+  const race_id = await generateRaceId();
+  const { race_name, race_date, check_in_open_time, race_start_time, checkpoints, address_line_1, address_line_2, city, postcode } = request.body;
 
-  const response = await db.run(
-    `INSERT INTO race (location_id, race_name, race_date, check_in_open_time, race_start_time) VALUES 
-      (?, ?, ?, ?, ?);`
-    , [location_id, race_name, race_date, check_in_open_time, race_start_time]);
+  const raceResponse = await db.run(
+    `INSERT INTO race (race_id, race_name, race_date, check_in_open_time, race_start_time, address_line_1, address_line_2, city, postcode) VALUES 
+      (?, ?, ?, ?, ?, ?, ?, ?, ?);`
+    , [race_id, race_name, race_date, check_in_open_time, race_start_time, address_line_1, address_line_2, city, postcode]);
 
+  if (!raceResponse) throw new Error('Error creating race');
 
-  if (!response) throw new Error('Error');
+  for (const checkpoint of checkpoints) {
+    const checkpointResponse = await db.run(
+      `INSERT INTO race_checkpoint (race_id, checkpoint_position, checkpoint_name) VALUES
+       (?, ?, ?);`
+      , [race_id, checkpoint.position, checkpoint.name]
+    );
 
-  return response;
+    if (!checkpointResponse) throw new Error('Error creating checkpoint');
+  }
+
+  return race_id;
 }
 
 export async function getRace(request, reply) {
   const { id } = request.params;
+  const { checkpoints, participants } = request.query;
 
-  const raceResponse = await db.get('SELECT * FROM race WHERE race_id = ?;', [id]);
+  let response = {};
 
-  if (!raceResponse) throw new Error('Not found');
+  const race = await db.get('SELECT * FROM race WHERE race_id = ?;', [id]);
 
-  const locationResponse = await db.get('SELECT * FROM location WHERE location_id=?', [raceResponse.location_id]);
+  if (!race) throw new Error('Not found');
 
-  const checkpointsResponse = await db.all('SELECT * FROM checkpoint AS c JOIN race_checkpoint AS rc ON c.checkpoint_id = rc.checkpoint_id WHERE rc.race_id=?', [id]);
-
-  return {
-    ...raceResponse,
-    location: locationResponse,
-    checkpoints: checkpointsResponse,
+  response = {
+    ...race
   };
+
+  if (checkpoints) {
+    const race_checkpoint = await db.all('SELECT * FROM race_checkpoint WHERE race_id=?', [id]);
+
+    response = {
+      ...response,
+      race_checkpoint
+    }
+  }
+
+  if (participants) {
+    const race_participant = await db.all('SELECT * FROM race_participant WHERE race_id=?', [id]);
+    response = {
+      ...response,
+      race_participant
+    }
+  }
+
+  return response;
 }
 
 export async function checkInParticipant(request, reply) {
@@ -75,32 +112,36 @@ export async function updateRace(request, reply) {
 
 export async function startRace(request, reply) {
   const { id } = request.params;
-  const { race_start_time } = request.body;
+  const { race_start_time, race_date } = request.body;
 
   const response = await db.run(`
     UPDATE race
-    SET race_start_time = ?
+    SET 
+      race_start_time = ?,
+      race_date = ?
     WHERE race_id = ?;
-    `, [race_start_time, id]);
+    `, [race_start_time, race_date, id]);
 
   if (!response) throw new Error('Not found');
 
-  return response;
+  return { message: `Race started at: ${race_start_time}` };
 }
 
 export async function stopRace(request, reply) {
   const { id } = request.params;
-  const { race_end_time } = request.body;
+  const { race_end_time, race_date } = request.body;
 
-  // const response = await db.run(`
-  //   UPDATE race
-  //   SET race_start_time = ?
-  //   WHERE race_id = ?;
-  //   `, [race_start_time, id]);
+  const response = await db.run(`
+    UPDATE race
+    SET 
+      race_end_time = ?,
+      race_date = ?
+    WHERE race_id = ?;
+    `, [race_end_time, race_date, id]);
 
-  // if (!response) throw new Error('Not found');
+  if (!response) throw new Error('Not found');
 
-  return { message: 'Race stopped' };
+  return { message: `Race stopped: ${race_end_time}` };
 }
 
 
@@ -120,7 +161,16 @@ export const raceRoutes = [
     method: 'POST',
     url: '/api/race',
     handler: createRace,
-    requiredParams: ['location_id', 'race_name', 'race_date', 'check_in_open_time', 'race_start_time'],
+    requiredParams: [
+      'race_date',
+      'race_name',
+      'race_start_time',
+      'postcode',
+      'city',
+      'checkpoints',
+      'check_in_open_time',
+      'address_line_1',
+    ],
   },
   {
     method: 'GET',
@@ -150,13 +200,13 @@ export const raceRoutes = [
     method: 'PATCH',
     url: '/api/race/:id/start',
     handler: startRace,
-    requiredParams: ['id', 'race_start_time'],
+    requiredParams: ['id', 'race_start_time', 'race_date'],
   },
   {
     method: 'PATCH',
     url: '/api/race/:id/stop',
     handler: stopRace,
-    requiredParams: ['id', 'race_end_time'],
+    requiredParams: ['id', 'race_end_time', 'race_date'],
   },
   {
     method: 'DELETE',
