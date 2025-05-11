@@ -1,10 +1,11 @@
 import Fastify from 'fastify';
-import path from 'path';
-import fs from 'fs/promises';
+import url from 'url';
 import fastifyStatic from '@fastify/static';
-import { createAPIRoute, createPageRoute } from '../lib/utils.js';
-import { routes } from './api/routes/index.js';
-import { pages } from './pages.js';
+import path from 'path';
+import { createAPIRoute, routes } from './api/routes/index.js';
+
+// Sets root dirname to start at `src`
+const __dirname = url.fileURLToPath(new URL('..', import.meta.url));
 
 export const PORT = 8080;
 
@@ -13,37 +14,34 @@ export const app = Fastify({
 });
 
 async function main() {
-  // Register static files to be served from `public`
-  app.register(fastifyStatic, {
-    root: path.join(process.cwd(), 'src/client'),
-    prefix: '/public/',
-    index: false,
+  // Register static files
+  await app.register(fastifyStatic, {
+    root: path.join(__dirname, 'client'),
   });
 
-  // 404 handler
-  app.setNotFoundHandler(async (request, reply) => {
-    reply.code(404);
-    const pagePath = path.join('src', 'pages');
-    const file = await fs.readFile(
-      path.join(pagePath, 'not-found.html'),
-      'utf-8',
-    );
-    reply.type('text/html').send(file);
+  app.get('/', async (request, reply) => {
+    return reply.redirect('/app/');
   });
 
-  /* Page Routes */
-  for (const page of pages) {
-    createPageRoute(app, page);
-  }
+  app.get('/app', async (request, reply) => {
+    return reply.redirect('/app/');
+  });
 
-  /* API Routes */
+  app.get('/app/*', async (request, reply) => {
+    return reply.sendFile('index.html');
+  });
+
   for (const route of routes) {
     createAPIRoute(app, route);
   }
 
   // Start the server
   try {
-    await app.listen({ port: PORT }, (err, address) => {
+    app.listen({ port: PORT }, (err, address) => {
+      if (err) {
+        app.log.error(err);
+        process.exit(1);
+      }
       console.log(`Server listening ${address}`);
     });
   } catch (err) {

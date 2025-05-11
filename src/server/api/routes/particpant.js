@@ -1,6 +1,4 @@
 import { db } from '../../db/index.js';
-import { generateRandomId } from '../../../lib/utils.js';
-
 
 export async function getAllParticipants(request, reply) {
   return await db.all('SELECT * FROM participant;');
