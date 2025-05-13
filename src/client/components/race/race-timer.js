@@ -21,13 +21,11 @@ class RaceTimer extends HTMLElement {
         this.startTime = parsed;
         this.restartTimer();
       } else if (newValue === 'null' && this.startTime !== null) {
-
         this.startTime = null;
         this.restartTimer();
       }
     }
     if (name === 'is-running') {
-
       const newIsRunning = newValue === 'true';
       if (newIsRunning !== this.isRunning) {
         this.isRunning = newIsRunning;

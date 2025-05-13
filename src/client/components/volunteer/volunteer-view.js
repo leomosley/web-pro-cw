@@ -1,7 +1,7 @@
 import {
   calculateElapsedTime,
   getRaceById,
-  convertTimeToTimestamp
+  convertTimeToTimestamp,
 } from '../../lib/utils.mjs';
 
 
@@ -171,10 +171,9 @@ class VolunteerView extends HTMLElement {
       } catch (error) {
         console.error('Error calculating elapsed time:', error);
         const elapsedTimeElem = document.createElement('p');
-        elapsedTimeElem.textContent = `Current Elapsed Time: Error calculating`;
+        elapsedTimeElem.textContent = 'Current Elapsed Time: Error calculating';
         container.append(elapsedTimeElem);
       }
-
     } else if (this.race.race_start_time && typeof this.race.race_start_time === 'string' && this.race.race_end_time && typeof this.race.race_end_time === 'string') {
       // If race has ended, display the total duration
       try {
@@ -187,13 +186,13 @@ class VolunteerView extends HTMLElement {
       } catch (error) {
         console.error('Error calculating race duration:', error);
         const totalDurationElem = document.createElement('p');
-        totalDurationElem.textContent = `Race Duration: Error calculating`;
+        totalDurationElem.textContent = 'Race Duration: Error calculating';
         container.append(totalDurationElem);
       }
     } else {
       // Display a placeholder if race hasn't started or data is incomplete
       const elapsedTimeElem = document.createElement('p');
-      elapsedTimeElem.textContent = `Elapsed Time: N/A`;
+      elapsedTimeElem.textContent = 'Elapsed Time: N/A';
       container.append(elapsedTimeElem);
     }
 
@@ -290,7 +289,7 @@ class VolunteerView extends HTMLElement {
     title.textContent = validCheckpoint ? `Checkpoint ${this.checkpoint}` : 'Choose checkpoint';
     header.append(title);
 
-    header.append(`Ask the race organiser where you checkpoint is located and head to it in order to fufil your role.`);
+    header.append('Ask the race organiser where you checkpoint is located and head to it in order to fufil your role.');
     wrapper.append(header);
 
     if (!validCheckpoint) {
@@ -410,7 +409,6 @@ class VolunteerView extends HTMLElement {
     }
 
     existingCounter.textContent = this.passed;
-
   }
 
   renderPositionsList(wrapper) {
@@ -438,13 +436,12 @@ class VolunteerView extends HTMLElement {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        positions: this.positions
+        positions: this.positions,
       }),
     });
 
     if (!response.ok) {
       console.error('Failed to submit positions');
-      return;
     }
   }
 
@@ -452,7 +449,7 @@ class VolunteerView extends HTMLElement {
     console.log({
       raceId: this.raceId,
       checkpoint: this.checkpoint,
-      passed: this.passed
+      passed: this.passed,
     });
   }
 

@@ -161,11 +161,11 @@ export async function raceCheckIn(request, reply) {
     WHERE 
       race_id = ? AND 
       participant_id = ?;`
-    , [id, participant_id]);
+  , [id, participant_id]);
 
   let checkInResponse;
   if (!existsResponse) {
-    checkInResponse = await db.run(`INSERT INTO race_participant (race_id, participant_id, checked_in) VALUES (?, ?, TRUE);`, [id, participant_id]);
+    checkInResponse = await db.run('INSERT INTO race_participant (race_id, participant_id, checked_in) VALUES (?, ?, TRUE);', [id, participant_id]);
   } else {
     checkInResponse = await db.run(`
       UPDATE race_participant 
@@ -173,12 +173,12 @@ export async function raceCheckIn(request, reply) {
       WHERE 
         race_id = ? AND 
         participant_id = ?;`
-      , [id, participant_id]);
+    , [id, participant_id]);
   }
 
   if (!checkInResponse) throw new Error('Failed to check in.');
 
-  return { message: `Participant ${participant_id} checked into race: ${id}` }
+  return { message: `Participant ${participant_id} checked into race: ${id}` };
 }
 
 export async function raceCheckOut(request, reply) {
@@ -191,7 +191,7 @@ export async function raceCheckOut(request, reply) {
     WHERE 
       race_id = ? AND 
       participant_id = ?;`
-    , [id, participant_id]);
+  , [id, participant_id]);
 
   if (!existsResponse) throw new Error('Participant is not associated with this race.');
 
@@ -202,11 +202,11 @@ export async function raceCheckOut(request, reply) {
     WHERE 
       race_id = ? AND 
       participant_id = ?;`
-    , [finish_postion, id, participant_id]);
+  , [finish_postion, id, participant_id]);
 
   if (!checkOutResponse) throw new Error('Failed to check out.');
 
-  return { message: `Participant ${participant_id} checked out race: ${id} with the finish postion of: ${finish_postion}` }
+  return { message: `Participant ${participant_id} checked out race: ${id} with the finish postion of: ${finish_postion}` };
 }
 
 export async function createRacePositions(request, reply) {
@@ -218,7 +218,7 @@ export async function createRacePositions(request, reply) {
   console.log(positions);
 
   for (let i = 0; i < positions.length; i++) {
-    promises.push(db.run(`INSERT INTO race_position (race_id, finish_position, finish_time) VALUES (?, ?, ?);`, [id, i + 1, positions[i]]));
+    promises.push(db.run('INSERT INTO race_position (race_id, finish_position, finish_time) VALUES (?, ?, ?);', [id, i + 1, positions[i]]));
   }
 
   const response = await Promise.all(promises);
@@ -284,13 +284,13 @@ export const raceRoutes = [
     method: 'POST',
     url: '/api/race/:id/positions',
     handler: createRacePositions,
-    requiredParams: ['id', 'positions']
+    requiredParams: ['id', 'positions'],
   },
   {
     method: 'GET',
     url: '/api/race/:id/positions',
     handler: getRacePositions,
-    requiredParams: ['id']
+    requiredParams: ['id'],
   },
   {
     method: 'PATCH',
@@ -315,5 +315,5 @@ export const raceRoutes = [
     url: '/api/race/:id',
     handler: deleteRace,
     requiredParams: ['id'],
-  }
+  },
 ];

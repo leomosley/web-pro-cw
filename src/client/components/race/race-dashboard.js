@@ -132,7 +132,6 @@ class RaceDashboard extends HTMLElement {
   }
 
   handleRaceStopped(event) {
-
     const { time } = event.detail;
 
 
@@ -150,8 +149,6 @@ class RaceDashboard extends HTMLElement {
 
     if (this.raceTimerElement) {
       this.raceTimerElement.setAttribute('is-running', 'false');
-
-
     }
 
 
@@ -161,7 +158,6 @@ class RaceDashboard extends HTMLElement {
 
     const endEl = this.shadowRoot.getElementById('race-end-time');
     if (endEl && this.raceActualEndTime !== null) {
-
       endEl.textContent = `Race End Time: ${this.race.race_end_time}`;
     } else if (endEl) {
       endEl.textContent = 'Race End Time: Not ended yet';
