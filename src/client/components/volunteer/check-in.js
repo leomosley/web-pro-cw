@@ -23,8 +23,8 @@ class CheckIn extends HTMLElement {
   handleClick(event) {
     // TODO: undo after checkIn (toggle checkIn of last pid)
     const pid = this.shadowRoot.querySelector('input').value;
-    const raceId = this.getAttribute('raceId');
-    console.log('pid', pid, 'raceId', raceId);
+    const raceId = this.getAttribute('race-id');
+    console.log('pid', pid, 'race-id', raceId);
   }
 }
 

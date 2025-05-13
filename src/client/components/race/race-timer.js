@@ -6,17 +6,32 @@ class RaceTimer extends HTMLElement {
     this.attachShadow({ mode: 'open' });
     this.timerInterval = null;
     this.startTime = null;
+    this.isRunning = false;
   }
 
   static get observedAttributes() {
-    return ['start-time'];
+    return ['start-time', 'is-running'];
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
     if (name === 'start-time') {
       const parsed = Number(newValue);
-      if (!isNaN(parsed)) {
+
+      if (!isNaN(parsed) && parsed !== this.startTime) {
         this.startTime = parsed;
+        this.restartTimer();
+      } else if (newValue === 'null' && this.startTime !== null) {
+
+        this.startTime = null;
+        this.restartTimer();
+      }
+    }
+    if (name === 'is-running') {
+
+      const newIsRunning = newValue === 'true';
+      if (newIsRunning !== this.isRunning) {
+        this.isRunning = newIsRunning;
+        console.log('Timer: Updated isRunning:', this.isRunning);
         this.restartTimer();
       }
     }
@@ -24,8 +39,6 @@ class RaceTimer extends HTMLElement {
 
   connectedCallback() {
     this.render();
-    this.startTime = Number(this.getAttribute('start-time')) || Date.now();
-    this.startTimer();
   }
 
   disconnectedCallback() {
@@ -37,10 +50,14 @@ class RaceTimer extends HTMLElement {
   }
 
   startTimer() {
-    if (this.timerInterval) return;
+    if (!this.isRunning || this.timerInterval || this.startTime === null || isNaN(this.startTime)) {
+      if (!this.isRunning) {
+        this.updateDisplay('00:00:00');
+      }
+      return;
+    }
 
     this.timerInterval = setInterval(() => {
-      console.log(this.startTime);
       const currentTime = Date.now();
       const elapsedTime = calculateElapsedTime(this.startTime, currentTime);
       this.updateDisplay(elapsedTime);

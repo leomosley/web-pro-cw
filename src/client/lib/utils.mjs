@@ -1,6 +1,6 @@
 import { localStore } from './localStore.mjs';
 
-export function formatTime(milliseconds) {
+export function formatTime(milliseconds, includeMilliseconds = false) {
   const isNegative = milliseconds < 0;
   milliseconds = Math.abs(milliseconds);
 
@@ -8,20 +8,26 @@ export function formatTime(milliseconds) {
   const hours = Math.floor(totalSeconds / 3600);
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;
+  const remainingMilliseconds = milliseconds % 1000;
 
-  const formattedTime = [
+  let formattedTime = [
     hours.toString().padStart(2, '0'),
     minutes.toString().padStart(2, '0'),
     seconds.toString().padStart(2, '0'),
   ].join(':');
 
+  if (includeMilliseconds) {
+    formattedTime += `:${remainingMilliseconds.toString().padStart(3, '0')}`;
+  }
+
   return isNegative ? `-${formattedTime}` : formattedTime;
 }
 
-export function calculateElapsedTime(startTime, endTime) {
+
+export function calculateElapsedTime(startTime, endTime, milliseconds = false) {
   const elapsed = endTime - startTime;
 
-  return formatTime(elapsed);
+  return formatTime(elapsed, milliseconds);
 }
 
 export function convertTimeToTimestamp(timeStr) {

@@ -1,6 +1,6 @@
 import {
   getRaceById,
-  convertTimeToTimestamp, // Assuming this returns a number (timestamp)
+  convertTimeToTimestamp,
 } from '../../lib/utils.mjs';
 
 class RaceDashboard extends HTMLElement {
@@ -14,8 +14,8 @@ class RaceDashboard extends HTMLElement {
     this.raceTimerElement = null;
     this.startButton = null;
 
-    this.raceActualEndTime = null; // Timestamp of when the race actually ended
-    this.startTimeStamp = null; // Timestamp of when the race actually started
+    this.raceActualEndTime = null;
+    this.startTimeStamp = null;
   }
 
   async connectedCallback() {
@@ -26,18 +26,16 @@ class RaceDashboard extends HTMLElement {
 
     await this.fetchRaceData();
 
-    this.raceActualEndTime = this.race ? this.race.race_end_time || null : null;
+    this.raceActualEndTime = this.race && this.race.race_end_time ? convertTimeToTimestamp(this.race.race_end_time) : null;
 
-    // Calculate and store startTimeStamp based on fetched data
     if (this.race && this.race.race_start_time) {
       try {
         this.startTimeStamp = convertTimeToTimestamp(this.race.race_start_time);
       } catch (error) {
-        console.error('RaceDashboard: Error converting race start time to timestamp from fetched data:', error);
         this.startTimeStamp = null;
       }
     } else {
-      this.startTimeStamp = null; // Set to null if race data is missing start time
+      this.startTimeStamp = null;
     }
 
     this.render();
@@ -45,10 +43,10 @@ class RaceDashboard extends HTMLElement {
 
   disconnectedCallback() {
     if (this.startButton) {
-      this.startButton.removeEventListener('race-started', this.handleRaceStarted);
-      this.startButton.removeEventListener('race-start-error', this.handleRaceStartError);
-      this.startButton.removeEventListener('race-stopped', this.handleRaceStopped);
-      this.startButton.removeEventListener('race-stop-error', this.handleRaceStopError);
+      this.startButton.removeEventListener('race-started', this.handleRaceStarted.bind(this));
+      this.startButton.removeEventListener('race-start-error', this.handleRaceStartError.bind(this));
+      this.startButton.removeEventListener('race-stopped', this.handleRaceStopped.bind(this));
+      this.startButton.removeEventListener('race-stop-error', this.handleRaceStopError.bind(this));
     }
   }
 
@@ -74,9 +72,10 @@ class RaceDashboard extends HTMLElement {
     `;
   }
 
-
   render() {
     if (!this.race) return;
+
+    const isRunning = this.race && this.race.race_start_time && !this.raceActualEndTime;
 
     this.shadowRoot.innerHTML = `
       <div>
@@ -85,47 +84,35 @@ class RaceDashboard extends HTMLElement {
         <p>Scheduled Check In Open Time: ${this.race.check_in_open_time ? this.race.check_in_open_time : 'N/A'}</p>
          <open-check-in-button></open-check-in-button>
         <p id="race-start-time">Race Start Time: ${this.race.race_start_time ? this.race.race_start_time : 'Not started yet'}</p>
-        <p id="race-end-time">Race End Time: ${this.raceActualEndTime ? new Date(this.raceActualEndTime).toLocaleTimeString() : 'Not ended yet'}</p>
+        <p id="race-end-time">Race End Time: ${this.race.race_end_time ?? 'Not ended yet'}</p>
         <p>Participants checked in: ${this.race.race_participant.filter(p => !!p.checked_in).length}</p>
         <p>Participants registered: ${this.race.race_participant.length}</p>
-        <race-start-button race-id="${this.raceId}"></race-start-button>
-        <race-timer></race-timer>
+        <race-start-button race-id="${this.raceId}" is-running="${isRunning}"></race-start-button>
+        <race-timer start-time="${this.startTimeStamp}" is-running="${isRunning}"></race-timer>
       </div>
     `;
 
     this.startButton = this.shadowRoot.querySelector('race-start-button');
     this.raceTimerElement = this.shadowRoot.querySelector('race-timer');
 
-    // Determine if the race is currently running based on fetched data
-    const isRunning = this.race && this.race.race_start_time && !this.raceActualEndTime;
-    this.startButton.setAttribute('is-running', isRunning.toString());
-
     this.startButton.addEventListener('race-started', this.handleRaceStarted.bind(this));
     this.startButton.addEventListener('race-start-error', this.handleRaceStartError.bind(this));
     this.startButton.addEventListener('race-stopped', this.handleRaceStopped.bind(this));
     this.startButton.addEventListener('race-stop-error', this.handleRaceStopError.bind(this));
-
-    if (isRunning && this.raceTimerElement && this.startTimeStamp !== null) {
-      this.raceTimerElement.setAttribute('start-time', this.startTimeStamp);
-    } else if (this.raceTimerElement) {
-      this.raceTimerElement.setAttribute('start-time', null);
-    }
   }
 
   handleRaceStarted(event) {
-    const { time } = event.detail; // Assuming time is the time string (e.g., "10:00:00")
+    const { time } = event.detail;
 
     if (this.race) {
-      this.race.race_start_time = time; // Update race data with the actual start time string
+      this.race.race_start_time = time;
       try {
-        // Calculate and set the numerical timestamp
         this.startTimeStamp = convertTimeToTimestamp(time);
       } catch (error) {
-        console.error('RaceDashboard: Error converting started race time to timestamp:', error);
         this.startTimeStamp = null;
       }
     }
-    this.raceActualEndTime = null; // Reset end time as the race has started
+    this.raceActualEndTime = null;
 
     const startEl = this.shadowRoot.getElementById('race-start-time');
     if (startEl) startEl.textContent = `Race Start Time: ${time}`;
@@ -133,41 +120,69 @@ class RaceDashboard extends HTMLElement {
     const endEl = this.shadowRoot.getElementById('race-end-time');
     if (endEl) endEl.textContent = 'Race End Time: Not ended yet';
 
-    // **Start the timer by setting the start-time attribute:**
-    if (this.raceTimerElement && this.startTimeStamp !== null) {
+    if (this.raceTimerElement) {
       this.raceTimerElement.setAttribute('start-time', this.startTimeStamp);
+      this.raceTimerElement.setAttribute('is-running', 'true');
+    }
+
+
+    if (this.startButton) {
+      this.startButton.setAttribute('is-running', 'true');
     }
   }
 
   handleRaceStopped(event) {
-    const { time } = event.detail; // Assuming time is the actual end time timestamp
 
-    this.raceActualEndTime = time; // This should be the timestamp
-    if (this.race) this.race.race_end_time = time; // Update race data with the end timestamp
+    const { time } = event.detail;
 
-    // **Stop the timer by setting start-time to null:**
+
+    let endTimeStamp = null;
+    try {
+      endTimeStamp = convertTimeToTimestamp(time);
+    } catch (error) {
+    }
+
+    this.raceActualEndTime = endTimeStamp;
+    if (this.race) {
+      this.race.race_end_time = time;
+    }
+
+
     if (this.raceTimerElement) {
-      this.raceTimerElement.stopTimer(); // Explicitly stop the interval
-      this.raceTimerElement.setAttribute('start-time', null); // Signal the timer component to stop
+      this.raceTimerElement.setAttribute('is-running', 'false');
+
+
+    }
+
+
+    if (this.startButton) {
+      this.startButton.setAttribute('is-running', 'false');
     }
 
     const endEl = this.shadowRoot.getElementById('race-end-time');
-    // Display the race end time using the timestamp
     if (endEl && this.raceActualEndTime !== null) {
-      endEl.textContent = `Race End Time: ${new Date(this.raceActualEndTime).toLocaleTimeString()}`;
+
+      endEl.textContent = `Race End Time: ${this.race.race_end_time}`;
     } else if (endEl) {
       endEl.textContent = 'Race End Time: Not ended yet';
     }
   }
 
+
   handleRaceStartError(event) {
     const { error } = event.detail;
-    console.error('Race start error received in dashboard:', error);
+
+    if (this.startButton) {
+      this.startButton.setAttribute('is-running', 'false');
+    }
   }
 
   handleRaceStopError(event) {
     const { error } = event.detail;
-    console.error('Race stop error received in dashboard:', error);
+
+    if (this.startButton) {
+      this.startButton.setAttribute('is-running', 'true');
+    }
   }
 }
 
