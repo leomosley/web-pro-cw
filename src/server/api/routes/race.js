@@ -1,8 +1,33 @@
 import { db } from '../../db/index.js';
 import { generateRandomId } from '../../utils.mjs';
 
-export async function getAllRaces(request, reply) {
-  return await db.all('SELECT * FROM race;');
+async function getRaceById(raceId, checkpoints = false, participants = false) {
+  let raceResponse = {};
+
+  const race = await db.get('SELECT * FROM race WHERE race_id = ?;', [raceId]);
+
+  raceResponse = {
+    ...race,
+  }
+
+  if (checkpoints) {
+    const race_checkpoint = await db.all('SELECT * FROM race_checkpoint WHERE race_id=?', [raceId]);
+
+    raceResponse = {
+      ...raceResponse,
+      race_checkpoint,
+    };
+  }
+
+  if (participants) {
+    const race_participant = await db.all('SELECT * FROM race_participant WHERE race_id=?', [raceId]);
+    raceResponse = {
+      ...raceResponse,
+      race_participant,
+    };
+  }
+
+  return raceResponse;
 }
 
 async function generateRaceId() {
@@ -13,6 +38,25 @@ async function generateRaceId() {
 
     if (!checkRace) return id;
   }
+}
+
+export async function getAllRaces(request, reply) {
+  const { checkpoints, participants } = request.query;
+
+  const races = await db.all('SELECT race_id FROM race;');
+
+  console.log(races);
+
+  if (!races) throw new Error('Not found');
+
+  const response = [];
+
+  for (const { race_id } of races) {
+    const raceResponse = await getRaceById(race_id, checkpoints, participants);
+    response.push(raceResponse);
+  }
+
+  return response;
 }
 
 export async function createRace(request, reply) {
@@ -43,34 +87,7 @@ export async function getRace(request, reply) {
   const { id } = request.params;
   const { checkpoints, participants } = request.query;
 
-  let response = {};
-
-  const race = await db.get('SELECT * FROM race WHERE race_id = ?;', [id]);
-
-  if (!race) throw new Error('Not found');
-
-  response = {
-    ...race,
-  };
-
-  if (checkpoints) {
-    const race_checkpoint = await db.all('SELECT * FROM race_checkpoint WHERE race_id=?', [id]);
-
-    response = {
-      ...response,
-      race_checkpoint,
-    };
-  }
-
-  if (participants) {
-    const race_participant = await db.all('SELECT * FROM race_participant WHERE race_id=?', [id]);
-    response = {
-      ...response,
-      race_participant,
-    };
-  }
-
-  return response;
+  return await getRaceById(id, checkpoints, participants);
 }
 
 export async function checkInParticipant(request, reply) {
@@ -161,7 +178,7 @@ export async function raceCheckIn(request, reply) {
     WHERE 
       race_id = ? AND 
       participant_id = ?;`
-  , [id, participant_id]);
+    , [id, participant_id]);
 
   let checkInResponse;
   if (!existsResponse) {
@@ -173,7 +190,7 @@ export async function raceCheckIn(request, reply) {
       WHERE 
         race_id = ? AND 
         participant_id = ?;`
-    , [id, participant_id]);
+      , [id, participant_id]);
   }
 
   if (!checkInResponse) throw new Error('Failed to check in.');
@@ -191,7 +208,7 @@ export async function raceCheckOut(request, reply) {
     WHERE 
       race_id = ? AND 
       participant_id = ?;`
-  , [id, participant_id]);
+    , [id, participant_id]);
 
   if (!existsResponse) throw new Error('Participant is not associated with this race.');
 
@@ -202,7 +219,7 @@ export async function raceCheckOut(request, reply) {
     WHERE 
       race_id = ? AND 
       participant_id = ?;`
-  , [finish_postion, id, participant_id]);
+    , [finish_postion, id, participant_id]);
 
   if (!checkOutResponse) throw new Error('Failed to check out.');
 

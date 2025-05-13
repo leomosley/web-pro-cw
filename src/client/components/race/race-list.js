@@ -1,3 +1,5 @@
+import { getAllRaces } from "../../lib/utils.mjs";
+
 class RaceList extends HTMLElement {
   constructor() {
     super();
@@ -11,9 +13,14 @@ class RaceList extends HTMLElement {
   }
 
   async loadRaces() {
-    const response = await fetch('/api/race');
-    const data = await response.json();
-    this.races = data ?? [];
+    const result = await getAllRaces();
+
+    if (!result.success) {
+      console.error(result.error);
+      return;
+    }
+
+    this.races = result.races;
   }
 
   render() {
@@ -33,7 +40,7 @@ class RaceList extends HTMLElement {
           .querySelector('a');
 
         listItem.textContent = race.race_name;
-        listItem.setAttribute('href', `/app/organise/race?&id=${1}`);
+        listItem.setAttribute('href', `/app/organise/race?&id=${race.race_id}`);
         list.appendChild(listItem);
       }
       this.shadowRoot.appendChild(list);

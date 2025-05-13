@@ -90,6 +90,40 @@ export async function getRaceById(raceId, checkpoints = false, participants = fa
   }
 }
 
+export async function getAllRaces(checkpoints = false, participants = false) {
+  try {
+    let url = `/api/race`;
+
+    if (checkpoints) {
+      url += `&checkpoints=${checkpoints}`
+    }
+
+    if (participants) {
+      url += `&participants=${participants}`
+    }
+
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`Error fetching race: ${response.status}`);
+    }
+
+    const races = await response.json();
+
+    return {
+      success: true,
+      races,
+      error: null
+    }
+  } catch (error) {
+    return {
+      success: false,
+      races: null,
+      error: String(error)
+    }
+  }
+}
+
 export function setUserRole(role) {
   const roleOptions = [
     'participant',
