@@ -8,7 +8,7 @@ async function getRaceById(raceId, checkpoints = false, participants = false) {
 
   raceResponse = {
     ...race,
-  }
+  };
 
   if (checkpoints) {
     const race_checkpoint = await db.all('SELECT * FROM race_checkpoint WHERE race_id=?', [raceId]);
@@ -178,7 +178,7 @@ export async function raceCheckIn(request, reply) {
     WHERE 
       race_id = ? AND 
       participant_id = ?;`
-    , [id, participant_id]);
+  , [id, participant_id]);
 
   let checkInResponse;
   if (!existsResponse) {
@@ -190,7 +190,7 @@ export async function raceCheckIn(request, reply) {
       WHERE 
         race_id = ? AND 
         participant_id = ?;`
-      , [id, participant_id]);
+    , [id, participant_id]);
   }
 
   if (!checkInResponse) throw new Error('Failed to check in.');
@@ -208,7 +208,7 @@ export async function raceCheckOut(request, reply) {
     WHERE 
       race_id = ? AND 
       participant_id = ?;`
-    , [id, participant_id]);
+  , [id, participant_id]);
 
   if (!existsResponse) throw new Error('Participant is not associated with this race.');
 
@@ -219,7 +219,7 @@ export async function raceCheckOut(request, reply) {
     WHERE 
       race_id = ? AND 
       participant_id = ?;`
-    , [finish_postion, id, participant_id]);
+  , [finish_postion, id, participant_id]);
 
   if (!checkOutResponse) throw new Error('Failed to check out.');
 

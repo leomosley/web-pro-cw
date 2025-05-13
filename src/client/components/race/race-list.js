@@ -1,4 +1,4 @@
-import { getAllRaces } from "../../lib/utils.mjs";
+import { getAllRaces } from '../../lib/utils.mjs';
 
 class RaceList extends HTMLElement {
   constructor() {
