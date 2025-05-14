@@ -28,18 +28,52 @@
 
 <body>
   <header>
-    <nav-bar></nav-bar>
+
   </header>
 
   <main>
-
   </main>
 
+  <nav-bar></nav-bar>
+
+  <!-- Templates  -->
   <template id="tmp-view">
     <section class="view hidden">
     </section>
   </template>
+  <template id="tmp-nav-bar">
+    <style>
+      :host {
+        z-index: 50;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 4rem;
+        background: var(--background);
+        border-color: var(--border);
+        border-top-width: 1px;
+        border-top-style: solid;
+      }
+
+      nav {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      nav-button {
+        display: flex;
+        flex-direction: column-reverse;
+        align-items: center;
+        justify-items: center;
+        padding: 0.5rem;
+      }
+    </style>
+    <nav class="navbar"></nav>
+  </template>
+
   <script type="module" src="/index.mjs"></script>
+
 </body>
 
 </html>

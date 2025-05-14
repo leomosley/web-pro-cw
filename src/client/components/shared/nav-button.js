@@ -1,29 +1,31 @@
-import { navigate } from '../../lib/views.mjs';
+import { navigate } from "../../lib/views.mjs";
 
 class NavButton extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: 'open' });
-  }
-
-  connectedCallback() {
     this.render();
   }
 
-  render() {
-    this.shadowRoot.innerHTML = '';
+  connectedCallback() {
+    this.addEventListener('click', this.handleClick.bind(this));
+  }
 
-    const button = document.createElement('button');
-    button.dataset.view = this.getAttribute('view');
-    button.textContent = this.textContent;
-
-    button.addEventListener('click', this.handleClick.bind(this));
-
-    this.shadowRoot.appendChild(button);
+  disconnectedCallback() {
+    this.removeEventListener('click', this.handleClick.bind(this));
   }
 
   handleClick(event) {
-    navigate(event?.target?.dataset?.view ?? 'home');
+    if (event.target.tagName === 'A') {
+      event.preventDefault();
+    }
+
+    const view = this.getAttribute('view') ?? 'home';
+    navigate(view);
+  }
+
+  render() {
+    this.shadowRoot.innerHTML = this.innerHTML;
   }
 }
 

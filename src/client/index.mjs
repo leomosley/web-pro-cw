@@ -67,6 +67,7 @@ function getHandles() {
   ui.getViews = () => Object.values(ui.views ?? {});
   ui.getButtons = () => Object.values(ui.buttons ?? {});
   templates.view = document.querySelector('#tmp-view');
+  templates.navbar = document.querySelector('#tmp-nav-bar');
 }
 
 // Build views based on pages
