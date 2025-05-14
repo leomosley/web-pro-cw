@@ -1,4 +1,4 @@
-import { navigate } from "../../lib/views.mjs";
+import { navigate } from '../../lib/views.mjs';
 
 class NavButton extends HTMLElement {
   constructor() {
