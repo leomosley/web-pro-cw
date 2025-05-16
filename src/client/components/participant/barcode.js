@@ -6,35 +6,45 @@ class Barcode extends HTMLElement {
     this.canvas = document.createElement('canvas');
   }
 
+  static get observedAttributes() {
+    return ['value'];
+  }
+
   connectedCallback() {
     this.render();
   }
 
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (name === 'value' && oldValue !== newValue) {
+      this.render();
+    }
+  }
+
   render() {
-    const value = this.getAttribute('value'); // Get the barcode value from an attribute
+    const value = this.getAttribute('value');
     if (!value) {
-      console.error('No value attribute provided for barcode.');
       return;
     }
 
     const withChecksum = `[X]${value}[X]`;
-
-    const binaryString = toBinaryString(withChecksum); // Convert value to binary string
+    const binaryString = toBinaryString(withChecksum);
     const ctx = this.canvas.getContext('2d');
-    const barWidth = 2; // Width of each barcode bar
-    const height = 100; // Height of the barcode
+    const barWidth = 2;
+    const height = 100;
 
-    // Set canvas dimensions
-    this.canvas.width = binaryString.length * barWidth; // Width based on binary string length
+    this.canvas.width = binaryString.length * barWidth;
     this.canvas.height = height;
 
-    // Draw the barcode
+    ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); // Clear before redraw
+
     for (let i = 0; i < binaryString.length; i++) {
-      ctx.fillStyle = binaryString[i] === '1' ? 'black' : 'white'; // Set bar color
-      ctx.fillRect(i * barWidth, 0, barWidth, height); // Draw the bar
+      ctx.fillStyle = binaryString[i] === '1' ? 'black' : 'white';
+      ctx.fillRect(i * barWidth, 0, barWidth, height);
     }
 
-    this.appendChild(this.canvas); // Append the canvas to the custom element
+    if (!this.contains(this.canvas)) {
+      this.append(this.canvas);
+    }
   }
 }
 

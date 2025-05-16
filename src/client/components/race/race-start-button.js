@@ -26,19 +26,44 @@ class RaceStartButton extends HTMLElement {
 
   connectedCallback() {
     this.render();
-    this.updateButtonState();
   }
 
   render() {
     this.shadowRoot.innerHTML = `
+      <style>
+        button {
+          padding: 0.7rem;
+          width: 100%;
+          border-radius: 0.5rem;
+          font-family: inherit;
+          white-space: nowrap;
+          display: inline-flex;
+          justify-content: center;
+          cursor: pointer;
+          align-items: center;
+          font-weight: 500;
+          font-size: 0.875rem;
+          line-height: 1.25rem;
+          border: none;
+          color: var(--background);
+          background: var(--primary);
+        }
+
+        .running {
+          background: red;
+        }
+      </style>
       <button></button>
     `;
     this.button = this.shadowRoot.querySelector('button');
     this.button.addEventListener('click', this.handleClick.bind(this));
+    this.updateButtonState();
   }
 
   async handleClick() {
-    if (this._isProcessing) return;
+    if (this._isProcessing) {
+      return;
+    }
 
     if (this._isRunning) {
       await this.stopRace();
@@ -49,16 +74,13 @@ class RaceStartButton extends HTMLElement {
 
   async startRace() {
     if (this._isProcessing || !this._raceId || this._isRunning) {
-      if (this._isRunning) {
-        console.log('Race is already running.');
-      } else if (!this._raceId) {
-        console.warn('Race ID not set for start.');
-      }
       return;
     }
 
     this._isProcessing = true;
-    if (this.button) this.button.disabled = true;
+    if (this.button) {
+      this.button.disabled = true;
+    }
 
     const now = new Date();
     const currentTime = now.toLocaleTimeString();
@@ -95,7 +117,6 @@ class RaceStartButton extends HTMLElement {
       }
 
       const result = await startResponse.json();
-      console.log('Race start API startResponse:', result);
 
       this._isRunning = true;
       this.updateButtonState();
@@ -104,28 +125,26 @@ class RaceStartButton extends HTMLElement {
         detail: { time: currentTime, apiResponse: result },
       }));
     } catch (error) {
-      console.error('Error starting race:', error);
       this.dispatchEvent(new CustomEvent('race-start-error', {
         detail: { error: error.message },
       }));
     } finally {
       this._isProcessing = false;
-      if (this.button) this.button.disabled = false;
+      if (this.button) {
+        this.button.disabled = false;
+      }
     }
   }
 
   async stopRace() {
     if (this._isProcessing || !this._raceId || !this._isRunning) {
-      if (!this._isRunning) {
-        console.log('Race is not running.');
-      } else if (!this._raceId) {
-        console.warn('Race ID not set for stop.');
-      }
       return;
     }
 
     this._isProcessing = true;
-    if (this.button) this.button.disabled = true;
+    if (this.button) {
+      this.button.disabled = true;
+    }
 
     const now = new Date();
     const currentTime = now.toLocaleTimeString();
@@ -148,8 +167,6 @@ class RaceStartButton extends HTMLElement {
       }
 
       const result = await stopResponse.json();
-      console.log('Race stop API stopResponse:', result);
-
       this._isRunning = false;
       this.updateButtonState();
 
@@ -157,19 +174,26 @@ class RaceStartButton extends HTMLElement {
         detail: { time: currentTime, apiResponse: result },
       }));
     } catch (error) {
-      console.error('Error stopping race:', error);
       this.dispatchEvent(new CustomEvent('race-stop-error', {
         detail: { error: error.message },
       }));
     } finally {
       this._isProcessing = false;
-      if (this.button) this.button.disabled = false;
+      if (this.button) {
+        this.button.disabled = false;
+      }
     }
   }
 
   updateButtonState() {
     if (this.button) {
-      this.button.textContent = this._isRunning ? 'Stop Race' : 'Start Race';
+      if (this._isRunning) {
+        this.button.textContent = 'Stop Race';
+        this.button.classList.add('running');
+      } else {
+        this.button.textContent = 'Start Race';
+        this.button.classList.remove('running');
+      }
     }
   }
 

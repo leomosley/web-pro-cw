@@ -1,42 +1,68 @@
+import { templates } from '../../index.mjs';
+
 class RaceList extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: 'open' });
-    this.races = [];
+    this._races = [];
   }
 
-  async connectedCallback() {
-    await this.loadRaces();
+  set races(value) {
+    if (!Array.isArray(value)) {
+      return;
+    }
+    this._races = value;
     this.render();
   }
 
-  async loadRaces() {
-    const response = await fetch('/api/race');
-    const data = await response.json();
-    this.races = data ?? [];
+  get races() {
+    return this._races;
+  }
+
+  connectedCallback() {
+    this.render();
+    this.role = this.getAttribute('role');
   }
 
   render() {
-    this.shadowRoot.innerHTML = '';
+    this.shadowRoot.innerHTML = `
+      <style>
+        ul {
+          list-style: none;
+          padding: 0;
+        }
+      </style>
+      <ul id="race-list"></ul>
+    `;
 
-    const listItemTemplate = document.createElement('template');
-    listItemTemplate.innerHTML = '<li><a></a></li>';
+    const list = this.shadowRoot.querySelector('ul');
 
-    if (this.races.length === 0) {
+    if (this._races.length === 0) {
       const noRacesMessage = document.createElement('p');
       noRacesMessage.textContent = 'No races available.';
-      this.shadowRoot.appendChild(noRacesMessage);
-    } else {
-      const list = document.createElement('ul');
-      for (const race of this.races) {
-        const listItem = listItemTemplate.content.cloneNode(true)
-          .querySelector('a');
+      list.append(noRacesMessage);
+      return;
+    }
 
-        listItem.textContent = race.race_name;
-        listItem.setAttribute('href', `/app/organise/race?&id=${1}`);
-        list.appendChild(listItem);
-      }
-      this.shadowRoot.appendChild(list);
+    for (const race of this._races) {
+      const item = templates.raceListItem.content.cloneNode(true);
+
+      item.querySelector('.race-name').textContent = race.race_name;
+      item.querySelector('.race-date').textContent = `Date: ${race.race_date}`;
+      item.querySelector('.race-time').textContent = `Check-in: ${race.check_in_open_time}, Start: ${race.race_start_time}`;
+      item.querySelector('.race-location').textContent = [
+        race.address_line_1,
+        race.address_line_2,
+        race.city,
+        race.postcode,
+      ].filter(Boolean).join(', ');
+      item.querySelector('.race-link').textContent = 'View Details';
+
+
+      const url = `/app/${this.role === 'organiser' ? 'organise' : 'view'}/race?id=${race.race_id}`;
+      item.querySelector('.race-link').setAttribute('href', url);
+
+      list.append(item);
     }
   }
 }

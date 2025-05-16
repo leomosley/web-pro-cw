@@ -1,8 +1,33 @@
 import { db } from '../../db/index.js';
 import { generateRandomId } from '../../utils.mjs';
 
-export async function getAllRaces(request, reply) {
-  return await db.all('SELECT * FROM race;');
+async function getRaceById(raceId, checkpoints = false, participants = false) {
+  let raceResponse = {};
+
+  const race = await db.get('SELECT * FROM race WHERE race_id = ?;', [raceId]);
+
+  raceResponse = {
+    ...race,
+  };
+
+  if (checkpoints) {
+    const race_checkpoint = await db.all('SELECT * FROM race_checkpoint WHERE race_id=?', [raceId]);
+
+    raceResponse = {
+      ...raceResponse,
+      race_checkpoint,
+    };
+  }
+
+  if (participants) {
+    const race_participant = await db.all('SELECT * FROM race_participant WHERE race_id=?', [raceId]);
+    raceResponse = {
+      ...raceResponse,
+      race_participant,
+    };
+  }
+
+  return raceResponse;
 }
 
 async function generateRaceId() {
@@ -11,8 +36,29 @@ async function generateRaceId() {
 
     const checkRace = await db.get('SELECT 1 FROM race WHERE race_id = ?', [id]);
 
-    if (!checkRace) return id;
+    if (!checkRace) {
+      return id;
+    }
   }
+}
+
+export async function getAllRaces(request, reply) {
+  const { checkpoints, participants } = request.query;
+
+  const races = await db.all('SELECT race_id FROM race;');
+
+  if (!races) {
+    throw new Error('Not found');
+  }
+
+  const response = [];
+
+  for (const { race_id } of races) {
+    const raceResponse = await getRaceById(race_id, checkpoints, participants);
+    response.push(raceResponse);
+  }
+
+  return response;
 }
 
 export async function createRace(request, reply) {
@@ -24,7 +70,9 @@ export async function createRace(request, reply) {
       (?, ?, ?, ?, ?, ?, ?, ?, ?);`
     , [race_id, race_name, race_date, check_in_open_time, race_start_time, address_line_1, address_line_2, city, postcode]);
 
-  if (!raceResponse) throw new Error('Error creating race');
+  if (!raceResponse) {
+    throw new Error('Error creating race');
+  }
 
   for (const checkpoint of checkpoints) {
     const checkpointResponse = await db.run(
@@ -33,7 +81,9 @@ export async function createRace(request, reply) {
       , [race_id, checkpoint.position, checkpoint.name],
     );
 
-    if (!checkpointResponse) throw new Error('Error creating checkpoint');
+    if (!checkpointResponse) {
+      throw new Error('Error creating checkpoint');
+    }
   }
 
   return race_id;
@@ -43,50 +93,33 @@ export async function getRace(request, reply) {
   const { id } = request.params;
   const { checkpoints, participants } = request.query;
 
-  let response = {};
-
-  const race = await db.get('SELECT * FROM race WHERE race_id = ?;', [id]);
-
-  if (!race) throw new Error('Not found');
-
-  response = {
-    ...race,
-  };
-
-  if (checkpoints) {
-    const race_checkpoint = await db.all('SELECT * FROM race_checkpoint WHERE race_id=?', [id]);
-
-    response = {
-      ...response,
-      race_checkpoint,
-    };
-  }
-
-  if (participants) {
-    const race_participant = await db.all('SELECT * FROM race_participant WHERE race_id=?', [id]);
-    response = {
-      ...response,
-      race_participant,
-    };
-  }
-
-  return response;
+  return await getRaceById(id, checkpoints, participants);
 }
 
-export async function checkInParticipant(request, reply) {
+export async function raceCheckIn(request, reply) {
   const { id } = request.params;
   const { participant_id } = request.body;
 
-  const response = await db.run(`
-      UPDATE race_participant
-      SET checked_in = TRUE
-      WHERE race_id = ? AND participant_id = ?;
-      `, [id, participant_id]);
+  const exists = await db.get(
+    'SELECT 1 FROM race_participant WHERE race_id = ? AND participant_id = ?;',
+    [id, participant_id],
+  );
 
-  if (!response) throw new Error('Not found');
-
-  return response;
+  if (exists) {
+    const response = await db.run(
+      'UPDATE race_participant SET checked_in = TRUE WHERE race_id = ? AND participant_id = ?;',
+      [id, participant_id],
+    );
+    return response;
+  } else {
+    const response = await db.run(
+      'INSERT INTO race_participant (race_id, participant_id, checked_in) VALUES (?, ?, TRUE);',
+      [id, participant_id],
+    );
+    return response;
+  }
 }
+
 
 export async function checkOutParticipant(request, reply) {
   const { id } = request.params;
@@ -98,16 +131,11 @@ export async function checkOutParticipant(request, reply) {
     WHERE race_id = ? AND participant_id = ?;
     `, [end_time, id, participant_id]);
 
-  if (!response) throw new Error('Not found');
+  if (!response) {
+    throw new Error('Not found');
+  }
 
   return response;
-}
-
-export async function updateRace(request, reply) {
-  const { id } = request.params;
-  const body = request.body;
-
-  return { message: `Update race ${id}` };
 }
 
 export async function startRace(request, reply) {
@@ -122,7 +150,9 @@ export async function startRace(request, reply) {
     WHERE race_id = ?;
     `, [race_start_time, race_date, id]);
 
-  if (!response) throw new Error('Not found');
+  if (!response) {
+    throw new Error('Not found');
+  }
 
   return { message: `Race started at: ${race_start_time}` };
 }
@@ -139,16 +169,87 @@ export async function stopRace(request, reply) {
     WHERE race_id = ?;
     `, [race_end_time, race_date, id]);
 
-  if (!response) throw new Error('Not found');
+  if (!response) {
+    throw new Error('Not found');
+  }
 
   return { message: `Race stopped: ${race_end_time}` };
 }
 
+export async function raceCheckOut(request, reply) {
+  const { id } = request.params;
+  const { participant_id, finish_position } = request.body;
 
-export async function deleteRace(request, reply) {
+  const existsResponse = await db.run(`
+    SELECT 1
+    FROM race_participant 
+    WHERE 
+      race_id = ? AND 
+      participant_id = ?;`
+  , [id, participant_id]);
+
+  if (!existsResponse) {
+    throw new Error('Participant is not associated with this race.');
+  }
+
+  const checkOutResponse = await db.run(`
+    UPDATE race_participant 
+    SET 
+      finish_position = ?
+    WHERE 
+      race_id = ? AND 
+      participant_id = ?;`
+  , [finish_position, id, participant_id]);
+
+  if (!checkOutResponse) {
+    throw new Error('Failed to check out.');
+  }
+
+  return { message: `Participant ${participant_id} checked out race: ${id} with the finish postion of: ${finish_position}` };
+}
+
+export async function createRacePositions(request, reply) {
+  const { id } = request.params;
+  const { positions } = request.body;
+
+  const promises = [];
+
+  for (let i = 0; i < positions.length; i++) {
+    promises.push(db.run('INSERT INTO race_position (race_id, finish_position, finish_time) VALUES (?, ?, ?);', [id, i + 1, positions[i]]));
+  }
+
+  const response = await Promise.all(promises);
+
+  if (!response || response.length !== positions.length) {
+    throw new Error('Failed to record all finish positions.');
+  }
+
+
+  return response;
+}
+
+export async function getRacePositions(request, reply) {
   const { id } = request.params;
 
-  return { message: `Delete race ${id}` };
+  const response = await db.all('SELECT * FROM race_position WHERE race_id = ?', [id]);
+
+  if (!response) {
+    throw new Error(`Failed to values in race_position for race_id: ${id}`);
+  }
+
+  return response;
+}
+
+export async function getRaceParticipants(request, reply) {
+  const { id } = request.params;
+
+  const response = await db.all('SELECT * FROM race_participant WHERE race_id = ?', [id]);
+
+  if (!response) {
+    throw new Error(`Failed to values in race_participant for race_id: ${id}`);
+  }
+
+  return response;
 }
 
 export const raceRoutes = [
@@ -179,21 +280,33 @@ export const raceRoutes = [
     requiredParams: ['id'],
   },
   {
-    method: 'PATCH',
+    method: 'PUT',
     url: '/api/race/:id/check-in',
-    handler: checkInParticipant,
+    handler: raceCheckIn,
     requiredParams: ['id', 'participant_id'],
   },
   {
-    method: 'PATCH',
+    method: 'PUT',
     url: '/api/race/:id/check-out',
-    handler: checkOutParticipant,
-    requiredParams: ['id', 'participant_id', 'end_time'],
+    handler: raceCheckOut,
+    requiredParams: ['id', 'participant_id', 'finish_position'],
   },
   {
-    method: 'PATCH',
-    url: '/api/race/:id',
-    handler: updateRace,
+    method: 'POST',
+    url: '/api/race/:id/positions',
+    handler: createRacePositions,
+    requiredParams: ['id', 'positions'],
+  },
+  {
+    method: 'GET',
+    url: '/api/race/:id/positions',
+    handler: getRacePositions,
+    requiredParams: ['id'],
+  },
+  {
+    method: 'GET',
+    url: '/api/race/:id/participants',
+    handler: getRaceParticipants,
     requiredParams: ['id'],
   },
   {
@@ -207,11 +320,5 @@ export const raceRoutes = [
     url: '/api/race/:id/stop',
     handler: stopRace,
     requiredParams: ['id', 'race_end_time', 'race_date'],
-  },
-  {
-    method: 'DELETE',
-    url: '/api/race/:id',
-    handler: deleteRace,
-    requiredParams: ['id'],
   },
 ];

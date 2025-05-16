@@ -17,14 +17,33 @@ class CheckIn extends HTMLElement {
     const button = document.createElement('button');
     button.textContent = 'Check In';
     button.addEventListener('click', this.handleClick.bind(this));
-    this.shadowRoot.appendChild(button);
+    this.shadowRoot.append(button);
   }
 
-  handleClick(event) {
-    // TODO: undo after checkIn (toggle checkIn of last pid)
-    const pid = this.shadowRoot.querySelector('input').value;
-    const raceId = this.getAttribute('raceId');
-    console.log('pid', pid, 'raceId', raceId);
+  async handleClick() {
+    const pid = this.shadowRoot.querySelector('input').value.trim();
+    const raceId = new URLSearchParams(window.location.search).get('id');
+
+    if (!pid || !raceId) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`http://localhost:8080/api/race/${raceId}/check-in`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ participant_id: pid }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err);
+      }
+    } catch (error) {
+      // handle error
+    }
   }
 }
 

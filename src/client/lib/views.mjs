@@ -78,6 +78,12 @@ export async function loadView(view) {
 //  Store the app's state in the History API to allow the back button to work
 export function storeState() {
   history.pushState(ui.current, ui.current, `/app/${ui.current}`);
+
+  // Dispatch a custom eventafter the state is pushed
+  const storeStateEvent = new CustomEvent('view-changed', {
+    detail: { newState: ui.current }
+  });
+  window.dispatchEvent(storeStateEvent);
 }
 
 // Show the current view based on the name

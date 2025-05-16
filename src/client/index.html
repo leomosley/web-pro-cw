@@ -10,13 +10,20 @@
   <script type="module" src="/components/shared/nav-button.js"></script>
   <script type="module" src="/components/shared/profile-view.js"></script>
   <script type="module" src="/components/shared/onboarding-view.js"></script>
+  <script type="module" src="/components/shared/back-button.js"></script>
+  <script type="module" src="/components/shared/select-role.js"></script>
+  <script type="module" src="/components/shared/home-view.js"></script>
+  <script type="module" src="/components/shared/viewer-view.js"></script>
   <script type="module" src="/components/participant/generate-participant-id-button.js"></script>
   <script type="module" src="/components/participant/barcode.js"></script>
   <script type="module" src="/components/participant/participant-view.js"></script>
+  <script type="module" src="/components/participant/participant-races.js"></script>
+  <script type="module" src="/components/organiser/organiser-races.js"></script>
   <script type="module" src="/components/race/create-race-form.js"></script>
   <script type="module" src="/components/race/race-dashboard.js"></script>
   <script type="module" src="/components/race/race-timer.js"></script>
   <script type="module" src="/components/race/race-list.js"></script>
+  <script type="module" src="/components/race/race-results.js"></script>
   <script type="module" src="/components/race/race-start-button.js"></script>
   <script type="module" src="/components/volunteer/volunteer-view.js"></script>
   <script type="module" src="/components/volunteer/check-in.js"></script>
@@ -24,22 +31,1299 @@
   <script type="module" src="/components/auth/sign-up-view.js"></script>
   <script type="module" src="/components/auth/sign-in-view.js"></script>
   <script type="module" src="/components/auth/sign-out-view.js"></script>
+  <script type="module" src="/components/auth/sign-out-button.js"></script>
 </head>
 
 <body>
   <header>
-    <nav-bar></nav-bar>
+
   </header>
 
   <main>
-
   </main>
 
+  <nav-bar></nav-bar>
+
+  <!-- Templates  -->
   <template id="tmp-view">
     <section class="view hidden">
     </section>
   </template>
-  <script type="module" src="/index.mjs"></script>
+  <template id="tmp-nav-bar">
+    <style>
+      :host {
+        z-index: 50;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 4rem;
+        background: var(--background);
+        border-color: var(--border);
+        border-top-width: 1px;
+        border-top-style: solid;
+      }
+
+      nav {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        max-width: 42rem;
+        margin-left: auto;
+        margin-right: auto;
+        border-right: 1px solid var(--border);
+        border-left: 1px solid var(--border);
+      }
+
+      nav-button {
+        display: flex;
+        flex-direction: column-reverse;
+        align-items: center;
+        justify-items: center;
+        padding: 0.5rem;
+        color: var(--muted-foreground);
+      }
+
+      .active {
+        color: black;
+      }
+    </style>
+    <nav class="navbar"></nav>
+  </template>
+  <template id="tmp-participant-view">
+    <style>
+      :host {
+        display: flex;
+        justify-content: center;
+        justify-items: center;
+        padding: 1rem;
+        box-sizing: border-box;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      #without-id {
+        margin-top: 16rem;
+        align-items: center;
+        text-align: center;
+        text-wrap: balance;
+      }
+
+      #without-id>p {
+        color: var(--muted-foreground);
+      }
+
+      figure {
+        text-align: center;
+        text-wrap: balance;
+      }
+
+      figure>p {
+        font-size: 0.875rem;
+        color: var(--muted-foreground);
+      }
+
+      figure>p>span {
+        color: var(--primary);
+      }
+
+      div {
+        border: 1px solid var(--border);
+        padding: 1rem;
+        border-radius: 0.5rem;
+        max-width: fit-content;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      button {
+        padding: 0.7rem;
+        border-radius: 0.5rem;
+        font-family: inherit;
+        white-space: nowrap;
+        display: inline-flex;
+        cursor: pointer;
+        font-weight: 500;
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+        color: var(--background);
+        background: var(--primary);
+        border: none;
+      }
+
+      aside {
+        display: flex;
+        justify-content: end;
+      }
+    </style>
+    <section id="with-id" class="hidden">
+      <section>
+        <aside>
+          <button id="clear-button">Clear ID</button>
+        </aside>
+        <figure>
+          <p>Show this to a volunteer to check into a race.</p>
+          <div>
+            <participant-barcode id="barcode"></participant-barcode>
+          </div>
+          <p>ID: <span id="participant-id"></span></p>
+        </figure>
+      </section>
+      <section>
+        <h1>My Races</h1>
+        <participant-races></participant-races>
+      </section>
+    </section>
+    <section id="without-id" class="hidden">
+      <h1>You don't have a participant identifier.</h1>
+      <p>
+        If you would like to participate in a race you'll need a participant ID.
+      <p>
+        <generate-participant-id-button></generate-participant-id-button>
+    </section>
+  </template>
+  <template id="tmp-race-list-item">
+    <style>
+      article {
+        border: 1px solid var(--border);
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
+      }
+
+      h2 {
+        margin: 0;
+        font-size: 1.25rem;
+      }
+
+      .race-link {
+        display: inline-block;
+        margin-top: 0.5rem;
+        color: blue;
+        text-decoration: underline;
+      }
+    </style>
+    <li>
+      <article>
+        <header>
+          <h2 class="race-name"></h2>
+          <p class="race-date"></p>
+        </header>
+        <p class="race-time"></p>
+        <address class="race-location"></address>
+        <a class="race-link">View Details</a>
+      </article>
+    </li>
+  </template>
+  <template id="tmp-create-race-form">
+    <style>
+      :host {
+        display: block;
+        padding: 1rem;
+        padding-bottom: 5rem;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      footer {
+        position: fixed;
+        bottom: 4rem;
+        left: 0;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        box-sizing: border-box;
+        padding: 1rem;
+        border-top: 1px solid var(--border);
+        background: var(--background);
+      }
+
+      button {
+        padding: 0.7rem;
+        border-radius: 0.5rem;
+        font-family: inherit;
+        white-space: nowrap;
+        display: inline-flex;
+        cursor: pointer;
+        font-weight: 500;
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+        color: var(--background);
+        background: var(--primary);
+        border: none;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      button:disabled {
+        opacity: 50%;
+        pointer-events: none;
+        cursor: not-allowed;
+      }
+
+      button[data-type="prev"] {
+        background: var(--background);
+        color: var(--primary);
+        border: 1px solid var(--border);
+      }
+
+      button[data-type="add-checkpoint"] {
+        justify-content: center;
+        align-items: center;
+        margin-top: 0.5rem;
+      }
+
+      section {
+        display: flex;
+        flex-direction: column;
+      }
+
+      section>span {
+        margin-bottom: 0.5rem;
+        margin-top: 0.25rem;
+        color: var(--muted-foreground);
+        font-size: 0.75rem;
+      }
+
+      label {
+        font-weight: 600;
+        font-size: 1rem;
+        margin-bottom: 0.1rem;
+      }
+
+      input {
+        padding: 0.75em;
+        border-radius: 0.5rem;
+        border: 1px solid var(--border);
+        font-family: inherit;
+      }
+
+      ol {
+        list-style: none;
+        padding: 0;
+      }
+
+      li {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+      }
+
+      input[data-type="checkpoint"] {
+        flex: 1;
+      }
+
+      h2 {
+        margin-bottom: 0;
+      }
+    </style>
+    <section data-step="1">
+      <h1>Race Details</h1>
+      <label for="race_name">Race Name</label>
+      <input name="race_name" type="text" />
+      <span>A memorable name that describes your race well.</span>
+
+      <label for="race_date">Date</label>
+      <input name="race_date" type="date" />
+      <span>The date your race will be on.</span>
+
+      <label for="check_in_open_time">Check in time</label>
+      <input name="check_in_open_time" type="time" />
+      <span>When you want participants arriving from.</span>
+
+
+      <label for="race_start_time">Race start time</label>
+      <input name="race_start_time" type="time" />
+      <span>When you plan to start the race.</span>
+
+      <h2>Race Address</h2>
+      <span>Where your race start point is.</span>
+
+      <label for="address_line_1">Address Line 1</label>
+      <input name="address_line_1" type="text" />
+      <span></span>
+
+      <label for="address_line_2">Address Line 2</label>
+      <input name="address_line_2" type="text" />
+      <span></span>
+
+      <label for="city">Town/City</label>
+      <input name="city" type="text" />
+      <span></span>
+
+      <label for="postcode">Postcode</label>
+      <input name="postcode" type="text" />
+      <span></span>
+    </section>
+
+    <section data-step="2">
+      <h1>Checkpoints</h1>
+      <ol></ol>
+      <input data-type="add-checkpoint" placeholder="Finish" type="text" />
+      <button data-type="add-checkpoint">
+        Add checkpoint
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+          class="lucide lucide-circle-plus-icon lucide-circle-plus">
+          <circle cx="12" cy="12" r="10" />
+          <path d="M8 12h8" />
+          <path d="M12 8v8" />
+        </svg>
+      </button>
+    </section>
+
+    <footer>
+      <button data-type="prev">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+          class="lucide lucide-chevron-left-icon lucide-chevron-left">
+          <path d="m15 18-6-6 6-6" />
+        </svg>
+        Prev
+      </button>
+      <button data-type="next">
+        Next
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+          class="lucide lucide-chevron-right-icon lucide-chevron-right">
+          <path d="m9 18 6-6-6-6" />
+        </svg>
+      </button>
+      <button data-type="submit">Submit</button>
+    </footer>
+  </template>
+  <template id="tmp-select-role">
+    <style>
+      ul {
+        list-style: none;
+        padding: 0;
+        gap: 1rem;
+      }
+
+      button {
+        padding: 0.7rem;
+        border-radius: 0.5rem;
+        font-family: inherit;
+        width: 100%;
+        white-space: nowrap;
+        display: inline-flex;
+        cursor: pointer;
+        align-items: center;
+        font-weight: 500;
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+        border: none;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .selected {
+        color: var(--background);
+        background: var(--primary);
+      }
+    </style>
+    <header>
+      <h1>
+        Select A Role
+      </h1>
+      <p>
+        The role you select will be saved and made easily accessible from your bottom nav.
+      </p>
+    </header>
+    <ul>
+      <li>
+        <button data-role="participant">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            class="lucide lucide-snail-icon lucide-snail">
+            <path d="M2 13a6 6 0 1 0 12 0 4 4 0 1 0-8 0 2 2 0 0 0 4 0" />
+            <circle cx="10" cy="13" r="8" />
+            <path d="M2 21h12c4.4 0 8-3.6 8-8V7a2 2 0 1 0-4 0v6" />
+            <path d="M18 3 19.1 5.2" />
+            <path d="M22 3 20.9 5.2" />
+          </svg>
+          Participant
+        </button>
+      </li>
+      <li>
+        <button data-role="organiser">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            class="lucide lucide-clipboard-pen-icon lucide-clipboard-pen">
+            <rect width="8" height="4" x="8" y="2" rx="1" />
+            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-5.5" />
+            <path d="M4 13.5V6a2 2 0 0 1 2-2h2" />
+            <path
+              d="M13.378 15.626a1 1 0 1 0-3.004-3.004l-5.01 5.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z" />
+          </svg>
+          Organiser
+        </button>
+      </li>
+      <li>
+        <button data-role="volunteer">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            class="lucide lucide-hand-helping-icon lucide-hand-helping">
+            <path d="M11 12h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 14" />
+            <path d="m7 18 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.75-2.91l-4.2 3.9" />
+            <path d="m2 13 6 6" />
+          </svg>
+          Volunteer
+        </button>
+      </li>
+      <li>
+        <button data-role="viewer">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            class="lucide lucide-eye-icon lucide-eye">
+            <path
+              d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" />
+            <circle cx="12" cy="12" r="3" />
+          </svg>
+          Viewer
+        </button>
+      </li>
+    </ul>
+  </template>
+  <template id="tmp-profile-view">
+    <style>
+      :host {
+        display: block;
+        padding: 1rem;
+      }
+
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+      }
+
+      header>h1 {
+        font-size: 2rem;
+        margin: 0;
+        line-height: 1.2;
+      }
+
+      section {
+        margin-bottom: 0.5rem;
+      }
+
+      #role {
+        text-transform: capitalize;
+        font-weight: 500;
+      }
+    </style>
+    <header>
+      <h1>Profile</h1>
+      <nav-button view="sign-out">
+        <sign-out-button></sign-out-button>
+      </nav-button>
+    </header>
+    <section>
+      <p>Your current role: <span id="role"></span></p>
+      <select-role></select-role>
+    </section>
+  </template>
+  <template id="tmp-sign-out-button">
+    <style>
+      button {
+        padding: 0.7rem;
+        border-radius: 0.5rem;
+        font-family: inherit;
+        white-space: nowrap;
+        display: inline-flex;
+        cursor: pointer;
+        font-weight: 500;
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+        color: var(--background);
+        background: var(--primary);
+        border: none;
+        align-items: center;
+        gap: 0.5rem;
+      }
+    </style>
+    <button>
+      Sign Out
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+        class="lucide lucide-log-out-icon lucide-log-out">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+        <polyline points="16 17 21 12 16 7" />
+        <line x1="21" x2="9" y1="12" y2="12" />
+      </svg>
+    </button>
+  </template>
+  <template id="tmp-sign-out-view">
+    <style>
+      :host {
+        display: block;
+        justify-content: center;
+        justify-items: center;
+        padding: 1rem;
+        box-sizing: border-box;
+      }
+
+      header {
+        margin-top: 16rem;
+        margin-bottom: 2rem;
+        text-align: center;
+        text-wrap: balance;
+        align-items: center;
+      }
+
+      p {
+        color: var(--muted-foreground);
+        margin: 0;
+      }
+
+      section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        width: 100%;
+        justify-content: center;
+        font-size: 0.875rem;
+        line-height: 1rem;
+        text-align: center;
+        text-wrap: balance;
+      }
+
+      back-button {
+        margin-top: 1rem;
+        padding: 0.7rem;
+        border-radius: 0.5rem;
+        font-family: inherit;
+        white-space: nowrap;
+        display: inline-flex;
+        cursor: pointer;
+        font-weight: 500;
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+        color: var(--background);
+        background: var(--primary);
+        border: none;
+        align-items: center;
+        gap: 0.5rem;
+      }
+    </style>
+    <header>
+      <h1>Sign Out</h1>
+      <p>Are you sure you want to sign out? You'll loose all locally stored data.</p>
+    </header>
+    <section>
+      <sign-out-button></sign-out-button>
+      <p>If you're sure then click this.</p>
+      <back-button>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+          class="lucide lucide-move-left-icon lucide-move-left">
+          <path d="M6 8L2 12L6 16" />
+          <path d="M2 12H22" />
+        </svg>
+        Go Back
+      </back-button>
+      <p>If you want to go back the page you were just on click this.</p>
+    </section>
+  </template>
+  <template id="tmp-onboarding-view">
+    <style>
+      :host {
+        display: block;
+        padding: 1rem;
+      }
+
+      footer {
+        display: flex;
+        justify-content: end;
+      }
+
+      button {
+        padding: 0.7rem;
+        border-radius: 0.5rem;
+        font-family: inherit;
+        white-space: nowrap;
+        display: inline-flex;
+        cursor: pointer;
+        font-weight: 500;
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+        color: var(--background);
+        background: var(--primary);
+        border: none;
+        align-items: center;
+      }
+    </style>
+    <header>
+      <h1>Onboarding</h1>
+      <p>Welcome to the</p>
+    </header>
+    <section>
+      <select-role></select-role>
+    </section>
+    <footer>
+      <button>Save</button>
+    </footer>
+  </template>
+  <script type=" module" src="/index.mjs"></script>
+  <template id="tmp-sign-in-view">
+    <style>
+      :host {
+        display: block;
+        padding: 1rem;
+        max-width: 400px;
+        margin: 0 auto;
+      }
+
+      input {
+        padding: 0.75em;
+        border-radius: 0.5rem;
+        border: 1px solid var(--border);
+        font-family: inherit;
+      }
+
+      div {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+      }
+
+      label {
+        font-weight: 600;
+        font-size: 1rem;
+        margin-bottom: 0.1rem;
+      }
+
+      button {
+        padding: 0.7rem;
+        border-radius: 0.5rem;
+        font-family: inherit;
+        white-space: nowrap;
+        cursor: pointer;
+        font-weight: 500;
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+        color: var(--background);
+        background: var(--primary);
+        border: none;
+        align-items: center;
+        text-align: center;
+      }
+
+      h1 {
+        margin-bottom: 0.25rem;
+      }
+
+      span {
+        text-align: center;
+      }
+
+      nav-button {
+        text-decoration: underline;
+        text-underline-offset: 0.1rem;
+      }
+    </style>
+    <header>
+      <h1>Sign In</h1>
+      <p>Enter your details to access your already existing account.</p>
+    </header>
+    <section>
+      <div>
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" placeholder="test@example.com" required />
+      </div>
+      <div>
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required />
+      </div>
+      <div>
+        <button>Sign In</button>
+        <span>
+          Don't have an account?
+          <nav-button view="sign-up">
+            Sign Up
+          </nav-button>
+        </span>
+      </div>
+    </section>
+  </template>
+  <template id="tmp-sign-up-view">
+    <style>
+      :host {
+        display: block;
+        padding: 1rem;
+        max-width: 400px;
+        margin: 0 auto;
+      }
+
+      input {
+        padding: 0.75em;
+        border-radius: 0.5rem;
+        border: 1px solid var(--border);
+        font-family: inherit;
+      }
+
+      div {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+      }
+
+      label {
+        font-weight: 600;
+        font-size: 1rem;
+        margin-bottom: 0.1rem;
+      }
+
+      button {
+        padding: 0.7rem;
+        border-radius: 0.5rem;
+        font-family: inherit;
+        white-space: nowrap;
+        cursor: pointer;
+        font-weight: 500;
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+        color: var(--background);
+        background: var(--primary);
+        border: none;
+        align-items: center;
+        text-align: center;
+      }
+
+      h1 {
+        margin-bottom: 0.25rem;
+      }
+
+      span {
+        text-align: center;
+      }
+
+      nav-button {
+        text-decoration: underline;
+        text-underline-offset: 0.1rem;
+      }
+    </style>
+    <header>
+      <h1>Sign Up</h1>
+    </header>
+    <section>
+      <div>
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" placeholder="test@example.com" required />
+      </div>
+      <div>
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required />
+      </div>
+      <div>
+        <button>Sign Up</button>
+        <span>
+          Already have an account?
+          <nav-button view="sign-up">
+            Sign In
+          </nav-button>
+        </span>
+      </div>
+    </section>
+  </template>
+  <template id="tmp-home-view">
+    <style>
+      :host {
+        display: block;
+        padding: 1rem;
+      }
+
+      h1 {
+        margin-bottom: 0.25rem;
+      }
+
+      header>p {
+        margin-top: 0.25rem;
+      }
+
+      nav ul {
+        list-style: none;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      nav li {
+        margin-bottom: 0.5rem;
+      }
+
+      figure {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+      }
+    </style>
+    <header>
+      <h1>Home</h1>
+      <p>Select an option below.</p>
+    </header>
+    <figure>
+    </figure>
+    <nav>
+      <ul>
+      </ul>
+    </nav>
+  </template>
+  <template id="tmp-role-item">
+    <style>
+      li {
+        padding: 0.7rem;
+        border-radius: 0.5rem;
+        font-family: inherit;
+        cursor: pointer;
+        font-weight: 500;
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+        background: var(--muted);
+        border: none;
+      }
+
+      li>nav-button>h2 {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+      }
+
+      li>nav-button>span {
+        font-weight: 300;
+      }
+    </style>
+    <li>
+      <nav-button>
+        <h2></h2>
+        <span></span>
+      </nav-button>
+    </li>
+  </template>
+  <template id="tmp-favorited-role-item">
+    <style>
+      div {
+        padding: 0.7rem;
+        border-radius: 0.5rem;
+        font-family: inherit;
+        cursor: pointer;
+        font-weight: 500;
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+        background: var(--primary);
+        color: var(--background);
+        border: none;
+      }
+
+      div>nav-button>h2 {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+      }
+
+      div>nav-button>span {
+        font-weight: 300;
+      }
+    </style>
+    <div>
+      <nav-button>
+        <h2></h2>
+        <span></span>
+      </nav-button>
+    </div>
+  </template>
+  <template id="tmp-race-dashboard">
+    <style>
+      section {
+        padding: 1rem;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      h1 {
+        margin-bottom: 0.25rem;
+      }
+
+      p {
+        display: flex;
+        margin-bottom: 0.25rem;
+        margin-top: 0.25rem;
+        font-size: 0.875rem;
+        align-items: center;
+        gap: 0.25rem;
+
+      }
+
+      section>aside {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        background: var(--muted);
+        border-radius: 0.5rem;
+        padding: 0.5rem;
+      }
+
+      section>figure {
+        margin: 0;
+        margin-top: 3rem;
+        margin-bottom: 3rem;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+
+      footer {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      a {
+        padding: 0.7rem;
+        border-radius: 0.5rem;
+        font-family: inherit;
+        white-space: nowrap;
+        cursor: pointer;
+        font-weight: 500;
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+        color: var(--background);
+        background: var(--primary);
+        border: none;
+        align-items: center;
+        text-align: center;
+      }
+    </style>
+    <section>
+      <header>
+        <h1></h1>
+      </header>
+      <aside>
+        <p>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            class="lucide lucide-calendar-icon lucide-calendar">
+            <path d="M8 2v4" />
+            <path d="M16 2v4" />
+            <rect width="18" height="18" x="3" y="4" rx="2" />
+            <path d="M3 10h18" />
+          </svg>
+          <span id="race-date"></span>
+        </p>
+        <p>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            class="lucide lucide-clock-arrow-down-icon lucide-clock-arrow-down">
+            <path d="M12.338 21.994A10 10 0 1 1 21.925 13.227" />
+            <path d="M12 6v6l2 1" />
+            <path d="m14 18 4 4 4-4" />
+            <path d="M18 14v8" />
+          </svg>
+          Check In Time:
+          <span id="check-in-open-time"></span>
+        </p>
+
+        <p>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            class="lucide lucide-clock-arrow-up-icon lucide-clock-arrow-up">
+            <path d="M13.228 21.925A10 10 0 1 1 21.994 12.338" />
+            <path d="M12 6v6l1.562.781" />
+            <path d="m14 18 4-4 4 4" />
+            <path d="M18 22v-8" />
+          </svg>
+          <span id="race-start-time"></span>
+        </p>
+        <p>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            class="lucide lucide-clock-alert-icon lucide-clock-alert">
+            <path d="M12 6v6l4 2" />
+            <path d="M16 21.16a10 10 0 1 1 5-13.516" />
+            <path d="M20 11.5v6" />
+            <path d="M20 21.5h.01" />
+          </svg>
+          <span id="race-end-time"></span>
+        </p>
+        <p>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            class="lucide lucide-users-icon lucide-users">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+            <path d="M16 3.128a4 4 0 0 1 0 7.744" />
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+            <circle cx="9" cy="7" r="4" />
+          </svg>
+          Checked In:
+          <span id="participants-checked-in"></span>
+        </p>
+      </aside>
+      <figure>
+        <span>Time Elapsed:</span>
+        <race-timer></race-timer>
+      </figure>
+      <footer>
+        <open-check-in-button></open-check-in-button>
+        <race-start-button></race-start-button>
+        <a target="_blank" id="volunteer-share">Share to Volunteer</a>
+        <a target="_blank" id="viewer-share">Share to Viewer</a>
+        <a target="_blank" id="results" class="hidden">View Results</a>
+      </footer>
+    </section>
+  </template>
+  <template id="tmp-race-dashboard-not-found">
+    <style>
+      :host {
+        display: block;
+        text-align: center;
+        padding: 2rem;
+        color: #dc3545;
+      }
+    </style>
+    <h1>Race Not Found</h1>
+    <p>The race with ID <span id="race-id-display"></span> could not be loaded.</p>
+  </template>
+  <template id="tmp-volunteer-view">
+    <style>
+      h1 {
+        font-size: 1.5em;
+      }
+
+      .task-button[disabled] {
+        opacity: 0.5;
+      }
+
+      .tab-bar button {
+        margin-right: 0.5em;
+      }
+
+      section {
+        padding: 1rem;
+      }
+
+      h1 {
+        margin-bottom: 0.25rem;
+      }
+
+      p {
+        display: flex;
+        margin-bottom: 0.25rem;
+        margin-top: 0.25rem;
+        font-size: 0.875rem;
+        align-items: center;
+        gap: 0.25rem;
+
+      }
+
+      section>aside {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        background: var(--muted);
+        border-radius: 0.5rem;
+        padding: 0.5rem;
+      }
+
+      section>figure {
+        margin: 0;
+        margin-top: 3rem;
+        margin-bottom: 3rem;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+    </style>
+    <div id="volunteer-container">
+      <section>
+
+        <header>
+          <h1></h1>
+        </header>
+        <aside>
+          <p>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+              class="lucide lucide-calendar-icon lucide-calendar">
+              <path d="M8 2v4" />
+              <path d="M16 2v4" />
+              <rect width="18" height="18" x="3" y="4" rx="2" />
+              <path d="M3 10h18" />
+            </svg>
+            <span id="race-date"></span>
+          </p>
+          <p>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+              class="lucide lucide-clock-arrow-down-icon lucide-clock-arrow-down">
+              <path d="M12.338 21.994A10 10 0 1 1 21.925 13.227" />
+              <path d="M12 6v6l2 1" />
+              <path d="m14 18 4 4 4-4" />
+              <path d="M18 14v8" />
+            </svg>
+            Check In Time:
+            <span id="check-in-open-time"></span>
+          </p>
+
+          <p>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+              class="lucide lucide-clock-arrow-up-icon lucide-clock-arrow-up">
+              <path d="M13.228 21.925A10 10 0 1 1 21.994 12.338" />
+              <path d="M12 6v6l1.562.781" />
+              <path d="m14 18 4-4 4 4" />
+              <path d="M18 22v-8" />
+            </svg>
+            <span id="race-start-time"></span>
+          </p>
+          <p>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+              class="lucide lucide-clock-alert-icon lucide-clock-alert">
+              <path d="M12 6v6l4 2" />
+              <path d="M16 21.16a10 10 0 1 1 5-13.516" />
+              <path d="M20 11.5v6" />
+              <path d="M20 21.5h.01" />
+            </svg>
+            <span id="race-end-time"></span>
+          </p>
+          <p>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+              class="lucide lucide-users-icon lucide-users">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+              <path d="M16 3.128a4 4 0 0 1 0 7.744" />
+              <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+              <circle cx="9" cy="7" r="4" />
+            </svg>
+            Checked In:
+            <span id="participants-checked-in"></span>
+          </p>
+        </aside>
+        <figure>
+          <span>Time Elapsed:</span>
+          <race-timer></race-timer>
+        </figure>
+        <div class="tab-bar" id="task-buttons"></div>
+        <div data-section="task-content"></div>
+      </section>
+  </template>
+  <template id="tmp-race-results">
+    <style>
+      :host {
+        padding: 1rem;
+        display: block;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+      }
+
+      th,
+      td {
+        border: 1px solid #ccc;
+        padding: 0.5rem;
+        text-align: center;
+      }
+
+      button {
+        width: 100%;
+        padding: 0.7rem;
+        border-radius: 0.5rem;
+        font-family: inherit;
+        white-space: nowrap;
+        cursor: pointer;
+        font-weight: 500;
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+        color: var(--background);
+        background: var(--primary);
+        border: none;
+        align-items: center;
+        text-align: center;
+      }
+    </style>
+    <table>
+      <button id="export">Export to CSV</button>
+      <thead>
+        <tr>
+          <th>Position</th>
+          <th>Finish Time</th>
+          <th>Participant ID</th>
+        </tr>
+      </thead>
+      <tbody id="results-body"></tbody>
+    </table>
+  </template>
+  <template id="tmp-viewer-view">
+    <style>
+      section {
+        padding: 1rem;
+        display: block;
+      }
+
+      button {
+        padding: 0.7rem;
+        border-radius: 0.5rem;
+        font-family: inherit;
+        white-space: nowrap;
+        cursor: pointer;
+        font-weight: 500;
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+        border: none;
+        align-items: center;
+        text-align: center;
+      }
+
+      .active {
+        color: var(--background);
+        background: var(--primary);
+      }
+
+      figure {
+        margin: 0;
+        padding: 0;
+        margin-top: 12rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+
+      #checkpoints {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.25rem;
+      }
+    </style>
+    <section>
+      <header>
+        <h1></h1>
+        <div id="checkpoints">
+        </div>
+      </header>
+      <figure>
+        <h2></h2>
+        <race-timer></race-timer>
+      </figure>
+    </section>
+  </template>
 </body>
 
 </html>

@@ -27,8 +27,6 @@ CREATE TABLE IF NOT EXISTS race_participant (
   race_id CHAR(5) NOT NULL,
   participant_id CHAR(5) NOT NULL,
   checked_in BOOLEAN NOT NULL DEFAULT FALSE,
-  end_time TIME, 
-  race_time TIME, 
   finish_position INTEGER, 
   PRIMARY KEY (race_id, participant_id),
   FOREIGN KEY (race_id) REFERENCES race (race_id),

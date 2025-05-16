@@ -1,7 +1,9 @@
+import { templates } from '../../index.mjs';
 import {
   getRaceById,
-  convertTimeToTimestamp, // Assuming this returns a number (timestamp)
+  convertTimeToTimestamp,
 } from '../../lib/utils.mjs';
+
 
 class RaceDashboard extends HTMLElement {
   constructor() {
@@ -14,8 +16,8 @@ class RaceDashboard extends HTMLElement {
     this.raceTimerElement = null;
     this.startButton = null;
 
-    this.raceActualEndTime = null; // Timestamp of when the race actually ended
-    this.startTimeStamp = null; // Timestamp of when the race actually started
+    this.raceActualEndTime = null;
+    this.startTimeStamp = null;
   }
 
   async connectedCallback() {
@@ -24,33 +26,51 @@ class RaceDashboard extends HTMLElement {
       return;
     }
 
-    await this.fetchRaceData();
+    const fetchSuccess = await this.fetchRaceData();
 
-    this.raceActualEndTime = this.race ? this.race.race_end_time || null : null;
+    if (fetchSuccess) {
+      this.raceActualEndTime = this.race && this.race.race_end_time ? convertTimeToTimestamp(this.race.race_end_time) : null;
 
-    // Calculate and store startTimeStamp based on fetched data
-    if (this.race && this.race.race_start_time) {
-      try {
-        this.startTimeStamp = convertTimeToTimestamp(this.race.race_start_time);
-      } catch (error) {
-        console.error('RaceDashboard: Error converting race start time to timestamp from fetched data:', error);
+      if (this.race && this.race.race_start_time) {
+        try {
+          this.startTimeStamp = convertTimeToTimestamp(this.race.race_start_time);
+        } catch (error) {
+          this.startTimeStamp = null;
+        }
+      } else {
         this.startTimeStamp = null;
       }
-    } else {
-      this.startTimeStamp = null; // Set to null if race data is missing start time
-    }
 
-    this.render();
+      this.render();
+      this.attachButtonListeners();
+    }
   }
 
   disconnectedCallback() {
+    this.removeButtonListeners();
+  }
+
+  attachButtonListeners() {
+    this.startButton = this.shadowRoot.querySelector('race-start-button');
+    this.raceTimerElement = this.shadowRoot.querySelector('race-timer');
+
     if (this.startButton) {
-      this.startButton.removeEventListener('race-started', this.handleRaceStarted);
-      this.startButton.removeEventListener('race-start-error', this.handleRaceStartError);
-      this.startButton.removeEventListener('race-stopped', this.handleRaceStopped);
-      this.startButton.removeEventListener('race-stop-error', this.handleRaceStopError);
+      this.startButton.addEventListener('race-started', this.handleRaceStarted.bind(this));
+      this.startButton.addEventListener('race-start-error', this.handleRaceStartError.bind(this));
+      this.startButton.addEventListener('race-stopped', this.handleRaceStopped.bind(this));
+      this.startButton.addEventListener('race-stop-error', this.handleRaceStopError.bind(this));
     }
   }
+
+  removeButtonListeners() {
+    if (this.startButton) {
+      this.startButton.removeEventListener('race-started', this.handleRaceStarted.bind(this));
+      this.startButton.removeEventListener('race-start-error', this.handleRaceStartError.bind(this));
+      this.startButton.removeEventListener('race-stopped', this.handleRaceStopped.bind(this));
+      this.startButton.removeEventListener('race-stop-error', this.handleRaceStopError.bind(this));
+    }
+  }
+
 
   async fetchRaceData() {
     const result = await getRaceById(this.raceId, true, true);
@@ -66,108 +86,187 @@ class RaceDashboard extends HTMLElement {
   }
 
   renderNotFound() {
-    this.shadowRoot.innerHTML = `
-      <div>
-        <h1>Race Not Found</h1>
-        <p>The race with ID ${this.raceId} could not be loaded.</p>
-      </div>
-    `;
+    this.shadowRoot.innerHTML = '';
+    const template = templates.raceDashboardNotFound.content.cloneNode(true);
+    const raceIdSpan = template.querySelector('#race-id-display');
+    if (raceIdSpan) {
+      raceIdSpan.textContent = this.raceId;
+    }
+    this.shadowRoot.append(template);
   }
 
-
   render() {
-    if (!this.race) return;
-
-    this.shadowRoot.innerHTML = `
-      <div>
-        <h1>${this.race.race_name}</h1>
-        <p>Race date: ${this.race.race_date}</p>
-        <p>Scheduled Check In Open Time: ${this.race.check_in_open_time ? this.race.check_in_open_time : 'N/A'}</p>
-         <open-check-in-button></open-check-in-button>
-        <p id="race-start-time">Race Start Time: ${this.race.race_start_time ? this.race.race_start_time : 'Not started yet'}</p>
-        <p id="race-end-time">Race End Time: ${this.raceActualEndTime ? new Date(this.raceActualEndTime).toLocaleTimeString() : 'Not ended yet'}</p>
-        <p>Participants checked in: ${this.race.race_participant.filter(p => !!p.checked_in).length}</p>
-        <p>Participants registered: ${this.race.race_participant.length}</p>
-        <race-start-button race-id="${this.raceId}"></race-start-button>
-        <race-timer></race-timer>
-      </div>
-    `;
-
-    this.startButton = this.shadowRoot.querySelector('race-start-button');
-    this.raceTimerElement = this.shadowRoot.querySelector('race-timer');
-
-    // Determine if the race is currently running based on fetched data
-    const isRunning = this.race && this.race.race_start_time && !this.raceActualEndTime;
-    this.startButton.setAttribute('is-running', isRunning.toString());
-
-    this.startButton.addEventListener('race-started', this.handleRaceStarted.bind(this));
-    this.startButton.addEventListener('race-start-error', this.handleRaceStartError.bind(this));
-    this.startButton.addEventListener('race-stopped', this.handleRaceStopped.bind(this));
-    this.startButton.addEventListener('race-stop-error', this.handleRaceStopError.bind(this));
-
-    if (isRunning && this.raceTimerElement && this.startTimeStamp !== null) {
-      this.raceTimerElement.setAttribute('start-time', this.startTimeStamp);
-    } else if (this.raceTimerElement) {
-      this.raceTimerElement.setAttribute('start-time', null);
+    if (!this.race) {
+      return;
     }
+
+    this.shadowRoot.innerHTML = '';
+    const template = templates.raceDashboard.content.cloneNode(true);
+
+    const raceNameHeader = template.querySelector('Header h1');
+    if (raceNameHeader) {
+      raceNameHeader.textContent = this.race.race_name;
+    }
+
+    const raceDateSpan = template.querySelector('#race-date');
+    if (raceDateSpan) {
+      raceDateSpan.textContent = this.race.race_date;
+    }
+
+    const checkInOpenTimeSpan = template.querySelector('#check-in-open-time');
+    if (checkInOpenTimeSpan) {
+      checkInOpenTimeSpan.textContent = this.race.check_in_open_time ? this.race.check_in_open_time : 'N/A';
+    }
+
+    const raceStartTimePara = template.querySelector('#race-start-time');
+    if (raceStartTimePara) {
+      raceStartTimePara.textContent = `Race Start Time: ${this.race.race_start_time ? this.race.race_start_time : 'Not started yet'}`;
+    }
+
+    const raceEndTimePara = template.querySelector('#race-end-time');
+    if (raceEndTimePara) {
+      raceEndTimePara.textContent = `Race End Time: ${this.race.race_end_time ?? ''}`;
+    }
+
+    const participantsCheckedInSpan = template.querySelector('#participants-checked-in');
+    if (participantsCheckedInSpan) {
+      participantsCheckedInSpan.textContent = `${this.race.race_participant.filter(p => !!p.checked_in).length}/${this.race.race_participant.length}`;
+    }
+
+    const participantsRegisteredSpan = template.querySelector('#participants-registered');
+    if (participantsRegisteredSpan) {
+      participantsRegisteredSpan.textContent = this.race.race_participant.length;
+    }
+
+
+    const isRunning = this.race.race_start_time && !this.raceActualEndTime;
+
+    const raceStartButton = template.querySelector('race-start-button');
+    if (raceStartButton) {
+      raceStartButton.setAttribute('race-id', this.raceId);
+      raceStartButton.setAttribute('is-running', isRunning.toString());
+    }
+
+    const raceTimer = template.querySelector('race-timer');
+    if (raceTimer) {
+      const isRunning = this.race.race_start_time && !this.raceActualEndTime;
+      raceTimer.setAttribute('start-time', this.startTimeStamp);
+      raceTimer.setAttribute('is-running', isRunning.toString());
+    }
+
+    const viewerShare = template.querySelector('#viewer-share');
+    viewerShare.href = `/app/view?id=${this.raceId}`;
+
+    const volunteerShare = template.querySelector('#volunteer-share');
+    volunteerShare.href = `/app/volunteer?id=${this.raceId}`;
+
+    this.viewResults = template.querySelector('#results');
+    this.viewResults.href = `/app/race/results?id=${this.raceId}`;
+
+    if (!isRunning) {
+      this.viewResults.classList.remove('hidden');
+    }
+    this.shadowRoot.append(template);
   }
 
   handleRaceStarted(event) {
-    const { time } = event.detail; // Assuming time is the time string (e.g., "10:00:00")
+    const { time } = event.detail;
 
     if (this.race) {
-      this.race.race_start_time = time; // Update race data with the actual start time string
+      this.race.race_start_time = time;
       try {
-        // Calculate and set the numerical timestamp
         this.startTimeStamp = convertTimeToTimestamp(time);
       } catch (error) {
-        console.error('RaceDashboard: Error converting started race time to timestamp:', error);
         this.startTimeStamp = null;
       }
     }
-    this.raceActualEndTime = null; // Reset end time as the race has started
+    this.raceActualEndTime = null;
 
-    const startEl = this.shadowRoot.getElementById('race-start-time');
-    if (startEl) startEl.textContent = `Race Start Time: ${time}`;
+    const startEl = this.shadowRoot.querySelector('#race-start-time');
+    if (startEl) {
+      startEl.textContent = `Race Start Time: ${time}`;
+    }
 
-    const endEl = this.shadowRoot.getElementById('race-end-time');
-    if (endEl) endEl.textContent = 'Race End Time: Not ended yet';
+    const endEl = this.shadowRoot.querySelector('#race-end-time');
+    if (endEl) {
+      endEl.textContent = 'Race End Time: Not ended yet';
+    }
 
-    // **Start the timer by setting the start-time attribute:**
-    if (this.raceTimerElement && this.startTimeStamp !== null) {
+    if (this.raceTimerElement) {
       this.raceTimerElement.setAttribute('start-time', this.startTimeStamp);
+      this.raceTimerElement.setAttribute('is-running', 'true');
+    }
+
+    if (this.startButton) {
+      this.startButton.setAttribute('is-running', 'true');
+    }
+
+
+    if (this.viewResults) {
+      this.viewResults.classList.add('hidden');
     }
   }
 
   handleRaceStopped(event) {
-    const { time } = event.detail; // Assuming time is the actual end time timestamp
+    const { time } = event.detail;
 
-    this.raceActualEndTime = time; // This should be the timestamp
-    if (this.race) this.race.race_end_time = time; // Update race data with the end timestamp
-
-    // **Stop the timer by setting start-time to null:**
-    if (this.raceTimerElement) {
-      this.raceTimerElement.stopTimer(); // Explicitly stop the interval
-      this.raceTimerElement.setAttribute('start-time', null); // Signal the timer component to stop
+    let endTimeStamp = null;
+    try {
+      endTimeStamp = convertTimeToTimestamp(time);
+    } catch (error) {
+      // handle error
     }
 
-    const endEl = this.shadowRoot.getElementById('race-end-time');
-    // Display the race end time using the timestamp
-    if (endEl && this.raceActualEndTime !== null) {
-      endEl.textContent = `Race End Time: ${new Date(this.raceActualEndTime).toLocaleTimeString()}`;
+    this.raceActualEndTime = endTimeStamp;
+    if (this.race) {
+      this.race.race_end_time = time;
+    }
+
+    if (this.raceTimerElement) {
+      this.raceTimerElement.setAttribute('is-running', 'false');
+    }
+
+    if (this.startButton) {
+      this.startButton.setAttribute('is-running', 'false');
+    }
+
+    const endEl = this.shadowRoot.querySelector('#race-end-time');
+    if (endEl && this.race && this.race.race_end_time !== undefined && this.race.race_end_time !== null) {
+      endEl.textContent = `Race End Time: ${this.race.race_end_time}`;
     } else if (endEl) {
       endEl.textContent = 'Race End Time: Not ended yet';
     }
+
+
+    if (this.viewResults) {
+      this.viewResults.classList.remove('hidden');
+    }
   }
+
 
   handleRaceStartError(event) {
     const { error } = event.detail;
-    console.error('Race start error received in dashboard:', error);
+
+    if (this.startButton) {
+      this.startButton.setAttribute('is-running', 'false');
+    }
+
+
+    if (this.viewResults) {
+      this.viewResults.classList.remove('hidden');
+    }
   }
 
   handleRaceStopError(event) {
     const { error } = event.detail;
-    console.error('Race stop error received in dashboard:', error);
+
+    if (this.startButton) {
+      this.startButton.setAttribute('is-running', 'true');
+    }
+
+    if (this.viewResults) {
+      this.viewResults.classList.add('hidden');
+    }
   }
 }
 

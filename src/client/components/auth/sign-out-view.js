@@ -1,5 +1,5 @@
+import { templates } from '../../index.mjs';
 import { userStore } from '../../lib/auth.mjs';
-import { localStore } from '../../lib/localStore.mjs';
 import { navigate, readPath } from '../../lib/views.mjs';
 
 class SignOutView extends HTMLElement {
@@ -9,7 +9,6 @@ class SignOutView extends HTMLElement {
     this.user = null;
 
     this.handleUserChange = this.handleUserChange.bind(this);
-    this.handleSignOut = this.handleSignOut.bind(this);
   }
 
   connectedCallback() {
@@ -39,22 +38,9 @@ class SignOutView extends HTMLElement {
     }
   }
 
-  handleSignOut(event) {
-    localStore.setItem('user', null);
-    navigate('home');
-  }
-
   render() {
-    this.shadowRoot.innerHTML = `
-      <h1>Sign Out</h1>
-      <p>Are you sure you want to sign out?</p>
-    `;
-
-    const button = document.createElement('button');
-    button.addEventListener('click', this.handleSignOut.bind(this));
-    button.textContent = 'Sign Out';
-
-    this.shadowRoot.appendChild(button);
+    this.shadowRoot.innerHTML = '';
+    this.shadowRoot.append(templates.signOutView.content.cloneNode(true));
   }
 }
 

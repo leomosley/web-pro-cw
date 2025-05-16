@@ -1,9 +1,9 @@
 import { userStore } from "../lib/auth.mjs";
 
-export const protectedViews = [
-  'home',
-  'participant',
-  'settings',
+export const safeViews = [
+  'sign-in',
+  'sign-up',
+  'view'
 ];
 
 export const hiddenWhenAuthedViews = [
@@ -14,19 +14,25 @@ export const hiddenWhenAuthedViews = [
 export function authenticate(view) {
   const isAuthenticated = userStore.get();
 
-  for (const path of protectedViews) {
-    if (view.startsWith(path)) {
-      if (!isAuthenticated) {
-        return 'sign-in';
+  if (isAuthenticated) {
+    for (const path of hiddenWhenAuthedViews) {
+      if (view.startsWith(path)) {
+        return 'home';
       }
     }
   }
 
-  for (const path of hiddenWhenAuthedViews) {
-    if (view.startsWith(path)) {
-      if (isAuthenticated) {
-        return 'home';
+  if (!isAuthenticated) {
+    let safePath = false;
+
+    for (const path of safeViews) {
+      if (view.startsWith(path)) {
+        safePath = true;
       }
+    }
+
+    if (!safePath) {
+      return 'sign-in';
     }
   }
 

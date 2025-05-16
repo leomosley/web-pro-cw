@@ -1,5 +1,5 @@
+import { templates } from '../../index.mjs'; // Assuming templates is exported from index.mjs
 import { userStore } from '../../lib/auth.mjs';
-import { localStore } from '../../lib/localStore.mjs';
 import { navigate, readPath } from '../../lib/views.mjs';
 
 class SignUpView extends HTMLElement {
@@ -9,7 +9,7 @@ class SignUpView extends HTMLElement {
     this.user = null;
 
     this.handleUserChange = this.handleUserChange.bind(this);
-    this.handleSignUp = this.handleSignUp.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
   }
 
   connectedCallback() {
@@ -26,7 +26,9 @@ class SignUpView extends HTMLElement {
   }
 
   disconnectedCallback() {
-    if (this.unsubscribe) this.unsubscribe();
+    if (this.unsubscribe) {
+      this.unsubscribe();
+    }
   }
 
   handleUserChange(newUserValue) {
@@ -39,8 +41,8 @@ class SignUpView extends HTMLElement {
     }
   }
 
-  handleSignUp(event) {
-    localStore.setItem('user', {
+  handleSubmit() {
+    userStore.set({
       id: 1,
       onboarded: false,
     });
@@ -52,29 +54,12 @@ class SignUpView extends HTMLElement {
     this.shadowRoot.innerHTML = '';
 
     if (!this.user) {
-      const fields = [
-        { label: 'Email', type: 'email', name: 'email' },
-        { label: 'Password', type: 'password', name: 'password' },
-      ];
+      this.shadowRoot.append(templates.signUpView.content.cloneNode(true));
 
-      for (const field of fields) {
-        const label = document.createElement('label');
-        label.textContent = field.label;
-
-        const input = document.createElement('input');
-        input.type = field.type;
-        input.name = field.name;
-        input.required = true;
-
-        label.appendChild(input);
-        this.shadowRoot.appendChild(label);
-      }
-
-      const button = document.createElement('button');
-      button.addEventListener('click', this.handleSignUp);
-      button.textContent = 'Sign Up';
-
-      this.shadowRoot.appendChild(button);
+      const button = this.shadowRoot.querySelector('button');
+      button.addEventListener('click', this.handleSubmit.bind(this));
+    } else {
+      this.shadowRoot.innerHTML = '<p>You are already signed in.</p>';
     }
   }
 }

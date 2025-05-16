@@ -1,5 +1,5 @@
+import { templates } from '../../index.mjs';
 import { userStore } from '../../lib/auth.mjs';
-import { localStore } from '../../lib/localStore.mjs';
 import { navigate, readPath } from '../../lib/views.mjs';
 
 class OnboardingView extends HTMLElement {
@@ -9,6 +9,7 @@ class OnboardingView extends HTMLElement {
     this.user = null;
 
     this.handleUserChange = this.handleUserChange.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
   }
 
   connectedCallback() {
@@ -19,7 +20,7 @@ class OnboardingView extends HTMLElement {
       return navigate('home');
     }
 
-    if (currentPath === 'onboarding' && this.user.onboarded) {
+    if (currentPath === 'onboarding' && this.user && this.user.onboarded) {
       return navigate('home');
     }
 
@@ -29,7 +30,9 @@ class OnboardingView extends HTMLElement {
   }
 
   disconnectedCallback() {
-    if (this.unsubscribe) this.unsubscribe();
+    if (this.unsubscribe) {
+      this.unsubscribe();
+    }
   }
 
   handleUserChange(newUserValue) {
@@ -41,58 +44,26 @@ class OnboardingView extends HTMLElement {
       navigate('home');
     }
 
-    if (currentPath === 'onboarding' && this.user.onboarded) {
+    if (currentPath === 'onboarding' && this.user && this.user.onboarded) {
       navigate('home');
     }
   }
 
-  render() {
-    this.shadowRoot.innerHTML = `
-      <header>
-        <h1>Onboarding</h1>
-        <p>Welcome to the onboarding page!</p>
-      </header>
-      <section>
-        <p>Why are you here?</p>
-        <ul></ul>
-      </section>
-      <footer></footer>
-    `;
-
-    const optionsList = this.shadowRoot.querySelector('ul');
-    const options = [
-      'Participant',
-      'Organiser',
-      'Volunteer',
-      'Viewer',
-    ];
-
-    for (const option of options) {
-      const li = document.createElement('li');
-      const button = document.createElement('button');
-
-      button.textContent = option;
-      button.addEventListener('click', () => {
-        this.user.role = option.toLowerCase();
-      });
-
-      li.append(button);
-      optionsList.append(li);
+  handleSubmit() {
+    if (!this.user || !this.user.role) {
+      alert('Please select a role before submitting.');
+      return;
     }
+    this.user.onboarded = true;
+    userStore.set(this.user);
+    navigate('home');
+  }
 
-    const footer = this.shadowRoot.querySelector('footer');
-    const submitButton = document.createElement('button');
-    submitButton.textContent = 'Submit';
-    submitButton.addEventListener('click', () => {
-      if (!this.user.role) {
-        alert('Please select a role before submitting.');
-        return;
-      }
-      this.user.onboarded = true;
-      localStore.setItem('user', this.user);
-      navigate('home');
-    });
-    footer.append(submitButton);
+  render() {
+    this.shadowRoot.innerHTML = '';
+    this.shadowRoot.append(templates.onboardingView.content.cloneNode(true));
+    const submitButton = this.shadowRoot.querySelector('button');
+    submitButton.addEventListener('click', this.handleSubmit);
   }
 }
 

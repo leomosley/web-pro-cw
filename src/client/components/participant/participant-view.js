@@ -1,3 +1,4 @@
+import { templates } from '../../index.mjs';
 import { localStore } from '../../lib/localStore.mjs';
 
 class ParticipantView extends HTMLElement {
@@ -8,14 +9,13 @@ class ParticipantView extends HTMLElement {
   }
 
   connectedCallback() {
+    this.addEventListener('popstate', this.render.bind(this));
     this.addEventListener('participant-id-generated', this.render.bind(this));
   }
 
   disconnectedCallback() {
-    this.removeEventListener(
-      'participant-id-generated',
-      this.render.bind(this),
-    );
+    this.removeEventListener('popstate', this.render.bind(this));
+    this.removeEventListener('participant-id-generated', this.render.bind(this));
   }
 
   clearId() {
@@ -25,27 +25,27 @@ class ParticipantView extends HTMLElement {
 
   render() {
     const participantId = localStore.getItem('participantId');
-    this.shadowRoot.innerHTML = `
-      <section>
-        ${participantId
-        ? `
-              <participant-barcode value="${participantId}"></participant-barcode>
-              <p>ID: ${participantId}</p>
-              <button id="clear-button">Clear ID</button>
-              <h1>My Races</h1>
-              <race-list></race-list>
-            `
-        : `
-              <generate-participant-id-button></generate-participant-id-button>
-            `
-      }
-      </section>
-    `;
 
+    const clone = templates.participantView.content.cloneNode(true);
 
-    const clearButton = this.shadowRoot.querySelector('#clear-button');
-    if (clearButton) {
+    this.shadowRoot.innerHTML = '';
+    this.shadowRoot.append(clone);
+
+    const withIdSection = this.shadowRoot.querySelector('#with-id');
+    const withoutIdSection = this.shadowRoot.querySelector('#without-id');
+
+    if (participantId) {
+      withIdSection.classList.remove('hidden');
+      const barcode = this.shadowRoot.querySelector('#barcode');
+      const idSpan = this.shadowRoot.querySelector('#participant-id');
+      const clearButton = this.shadowRoot.querySelector('#clear-button');
+
+      barcode.setAttribute('value', participantId);
+      idSpan.textContent = participantId;
       clearButton.addEventListener('click', this.clearId.bind(this));
+    } else {
+      withIdSection.classList.add('hidden');
+      withoutIdSection.classList.remove('hidden');
     }
   }
 }
