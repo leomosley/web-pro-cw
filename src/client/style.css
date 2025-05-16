@@ -2,11 +2,15 @@
 
 :root {
   --background: #fff;
-  --border: #000;
+  --border: #c7c7c7;
+  --muted: #d7d6d6;
+  --muted-foreground: #6f6f6f;
+  --primary: #000;
+  --font: "Inter", sans-serif;
 }
 
 body {
-  font-family: "Inter", sans-serif;
+  font-family: var(--font);
   font-optical-sizing: auto;
   font-style: normal;
 }
@@ -17,4 +21,79 @@ body {
 
 body>main {
   padding-bottom: 4rem;
+  max-width: 42rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.organiser-races-header {
+  padding: 1rem 1rem 0 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.organiser-races-header>h1 {
+  font-size: 2rem;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.organiser-races-header>nav-button {
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  font-family: inherit;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: var(--background);
+  background: var(--primary);
+  border: none;
+  margin-left: auto;
+}
+
+.organiser-races-container {
+  padding: 1rem;
+}
+
+.organiser-view>header {
+  padding: 1rem;
+}
+
+.organiser-view>header>h1 {
+  font-size: 2rem;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.organiser-view>nav {
+  padding: 0rem 1rem 1rem 1rem;
+  display: grid;
+  grid-row: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.organiser-view>nav>nav-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 30dvh;
+  padding: 2rem;
+  border-radius: 0.5rem;
+  font-size: 2em;
+  font-family: inherit;
+  white-space: nowrap;
+  text-align: center;
+  cursor: pointer;
+  font-weight: 500;
+  color: var(--background);
+  background: var(--primary);
+  border: none;
 }

@@ -1,5 +1,4 @@
 import { localStore } from '../../lib/localStore.mjs';
-import { generateRandomId } from '../../lib/utils.mjs';
 
 class GenerateParticipantIDButton extends HTMLElement {
   constructor() {
@@ -14,36 +13,45 @@ class GenerateParticipantIDButton extends HTMLElement {
   }
 
   render() {
+    this.shadowRoot.innerHTML = `
+      <style>
+        button {
+          padding: 1rem;
+          border-radius: 0.5rem;
+          font-family: inherit;
+          white-space: nowrap;
+          display: inline-flex;
+          cursor: pointer;
+          font-weight: 500;
+          font-size: 0.875rem;
+          line-height: 1.25rem;
+          color: var(--background);
+          background: var(--primary);
+          border: none;
+        }
+      </style>
+    `;
     const button = document.createElement('button');
     button.dataset.view = this.getAttribute('view');
     button.textContent = 'Generate Participant ID';
 
     button.addEventListener('click', this.handleClick.bind(this));
 
-    this.shadowRoot.appendChild(button);
+    this.shadowRoot.append(button);
   }
 
   async handleClick(event) {
-    const participantId = generateRandomId();
-
     try {
       const response = await fetch('/api/participant', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          participant_id: participantId,
-        }),
       });
 
       if (!response.ok) {
-        console.error(`HTTP error! Status: ${response.status}`);
+        throw new Error();
       }
-    } catch (error) {
-      console.error('Fetch error:', error);
-    } finally {
-      localStore.setItem('participantId', participantId);
+
+      const id = await response.text();
+      localStore.setItem('participantId', id);
 
       this.dispatchEvent(
         new CustomEvent('participant-id-generated', {
@@ -51,12 +59,11 @@ class GenerateParticipantIDButton extends HTMLElement {
           composed: true,
         }),
       );
+    } catch (error) {
+      // handle error (dispatch error generating event)
     }
   }
 }
 
 
-customElements.define(
-  'generate-participant-id-button',
-  GenerateParticipantIDButton,
-);
+customElements.define('generate-participant-id-button', GenerateParticipantIDButton);

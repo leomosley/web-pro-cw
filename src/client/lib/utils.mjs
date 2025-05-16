@@ -31,7 +31,10 @@ export function calculateElapsedTime(startTime, endTime, milliseconds = false) {
 }
 
 export function convertTimeToTimestamp(timeStr) {
-  if (!timeStr) return null;
+  if (!timeStr) {
+    return null;
+  }
+
 
   const [hours, minutes, seconds] = timeStr.split(':').map(Number);
 
@@ -124,6 +127,135 @@ export async function getAllRaces(checkpoints = false, participants = false) {
   }
 }
 
+export async function getRacePositions(raceId) {
+  try {
+    if (!raceId) {
+      throw new Error("raceId not supplied");
+    }
+
+    let url = `/api/race/${raceId}/positions`;
+
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`Error fetching race: ${response.status}`);
+    }
+
+    const positions = await response.json();
+
+    return {
+      success: true,
+      positions,
+      error: null
+    }
+  } catch (error) {
+    return {
+      success: false,
+      positions: null,
+      error: String(error)
+    }
+  }
+}
+
+
+export async function getRaceParticipants(raceId) {
+  try {
+    if (!raceId) {
+      throw new Error("raceId not supplied");
+    }
+
+    let url = `/api/race/${raceId}/participants`;
+
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`Error fetching race: ${response.status}`);
+    }
+
+    const participants = await response.json();
+
+    return {
+      success: true,
+      participants,
+      error: null
+    }
+  } catch (error) {
+    return {
+      success: false,
+      participants: null,
+      error: String(error)
+    }
+  }
+}
+
+export async function getRaceResults(raceId) {
+  const [participantsRes, positionsRes] = await Promise.all([
+    getRaceParticipants(raceId),
+    getRacePositions(raceId)
+  ]);
+
+  if (!participantsRes.success || !positionsRes.success) {
+    return {
+      success: false,
+      results: null,
+      error: participantsRes.error || positionsRes.error
+    };
+  }
+
+  const participantPositions = new Map();
+  for (const participant of participantsRes.participants) {
+    if (participant.finish_position) {
+      participantPositions.set(participant.finish_position, participant.participant_id);
+    }
+  }
+
+
+  let combined = positionsRes.positions.map(p => ({
+    ...p,
+    participant_id: participantPositions.get(p.finish_position) ?? null
+  }));
+
+  return {
+    success: true,
+    results: combined,
+    error: null
+  };
+}
+
+export async function getAllParticipantsRaces(participantId, checkpoints = false, participants = false) {
+  try {
+    let url = `/api/participant/${participantId}/races`;
+
+    if (checkpoints) {
+      url += `&checkpoints=${checkpoints}`
+    }
+
+    if (participants) {
+      url += `&participants=${participants}`
+    }
+
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`Error fetching race: ${response.status}`);
+    }
+
+    const races = await response.json();
+
+    return {
+      success: true,
+      races,
+      error: null
+    }
+  } catch (error) {
+    return {
+      success: false,
+      races: null,
+      error: String(error)
+    }
+  }
+}
+
 export function setUserRole(role) {
   const roleOptions = [
     'participant',
@@ -162,54 +294,5 @@ export function setUserOnboarded(onboarded) {
   return {
     oldValue: prev.onboarded,
     newValue: onboarded
-  }
-}
-
-export async function fetchWrapper(url) {
-  const localStorageKey = `fetchFallback_${url}`; // Unique key for localStorage
-
-  try {
-    const apiResponse = await fetch(url);
-
-    if (!apiResponse.ok) {
-      throw new Error(`API request failed with status ${apiResponse.status}`);
-    }
-
-    const apiData = await apiResponse.json();
-
-    try {
-      localStorage.setItem(localStorageKey, JSON.stringify(apiData));
-    } catch (localStorageError) {
-      console.warn(
-        "fetchWithFallback: Could not save data to localStorage:",
-        localStorageError
-      );
-    }
-
-    return apiData;
-  } catch (apiError) {
-    console.error("fetchWithFallback: API request failed:", apiError);
-
-    console.log(
-      `fetchWithFallback: Attempting to retrieve data from localStorage for ${url}`
-    );
-    const localStorageData = localStorage.getItem(localStorageKey);
-
-    if (localStorageData) {
-      try {
-        return JSON.parse(localStorageData);
-      } catch (parseError) {
-        console.error(
-          "fetchWithFallback: Failed to parse data from localStorage:",
-          parseError
-        );
-        throw new Error(
-          `Failed to fetch data from API and failed to parse data from localStorage for ${url}`
-        );
-      }
-    } else {
-      console.warn(`fetchWithFallback: No data found in localStorage for ${url}`);
-      throw new Error(`Failed to fetch data from API and no data found in localStorage for ${url}`);
-    }
   }
 }

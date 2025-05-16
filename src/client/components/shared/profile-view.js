@@ -1,5 +1,5 @@
+import { templates } from '../../index.mjs';
 import { userStore } from '../../lib/auth.mjs';
-import { localStore } from '../../lib/localStore.mjs';
 
 class ProfileView extends HTMLElement {
   constructor() {
@@ -18,28 +18,31 @@ class ProfileView extends HTMLElement {
   }
 
   disconnectedCallback() {
-    if (this.unsubscribe) this.unsubscribe();
+    if (this.unsubscribe) {
+      this.unsubscribe();
+    }
   }
 
   handleUserChange(newUserValue) {
     this.user = newUserValue;
-    this.render();
+    this.updateRoleDisplay();
+  }
+
+  updateRoleDisplay() {
+    const roleSpan = this.shadowRoot.getElementById('role');
+    if (roleSpan && this.user && this.user.role) {
+      roleSpan.textContent = this.user.role;
+    } else if (roleSpan) {
+      roleSpan.textContent = 'Not set';
+    }
   }
 
   render() {
     this.shadowRoot.innerHTML = '';
 
-    const button = document.createElement('nav-button');
+    this.shadowRoot.append(templates.profileView.content.cloneNode(true));
 
-    if (!this.user) {
-      button.setAttribute('view', 'sign-in');
-      button.textContent = 'Sign In';
-    } else {
-      button.setAttribute('view', 'sign-out');
-      button.textContent = 'Sign Out';
-    }
-
-    this.shadowRoot.appendChild(button);
+    this.updateRoleDisplay();
   }
 }
 

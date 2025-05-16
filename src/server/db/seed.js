@@ -65,6 +65,4 @@ async function main() {
   }
 }
 
-if (import.meta.url === new URL(import.meta.url, import.meta.url).href) {
-  main();
-}
+main();

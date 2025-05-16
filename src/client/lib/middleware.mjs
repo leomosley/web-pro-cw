@@ -16,7 +16,9 @@ export function authenticate(view) {
 
   if (isAuthenticated) {
     for (const path of hiddenWhenAuthedViews) {
-      if (view.startsWith(path)) return 'home';
+      if (view.startsWith(path)) {
+        return 'home';
+      }
     }
   }
 
@@ -24,10 +26,14 @@ export function authenticate(view) {
     let safePath = false;
 
     for (const path of safeViews) {
-      if (view.startsWith(path)) safePath = true;
+      if (view.startsWith(path)) {
+        safePath = true;
+      }
     }
 
-    if (!safePath) return 'sign-in';
+    if (!safePath) {
+      return 'sign-in';
+    }
   }
 
   return view;

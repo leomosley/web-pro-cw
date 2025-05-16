@@ -1,6 +1,4 @@
-import { navigate } from '../../lib/views.mjs';
-
-class NavButton extends HTMLElement {
+class BackButton extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: 'open' });
@@ -15,16 +13,13 @@ class NavButton extends HTMLElement {
     this.removeEventListener('click', this.handleClick.bind(this));
   }
 
-  handleClick() {
-    const view = this.getAttribute('view') ?? 'home';
-    navigate(view);
+  render() {
+    this.shadowRoot.innerHTML = this.innerHTML;
   }
 
-  render() {
-    this.shadowRoot.innerHTML = `
-      <slot></slot>
-    `;
+  handleClick() {
+    history.back();
   }
 }
 
-customElements.define('nav-button', NavButton);
+customElements.define('back-button', BackButton);

@@ -19,15 +19,36 @@ class CheckOut extends HTMLElement {
     const button = document.createElement('button');
     button.textContent = 'Check Out';
     button.addEventListener('click', this.handleClick.bind(this));
-    this.shadowRoot.appendChild(button);
+    this.shadowRoot.append(button);
   }
 
-  handleClick(event) {
-    // TODO: undo after CheckOut (toggle CheckOut of last pid)
-    const particpantId = this.shadowRoot.querySelector('input[name="pid"').value;
-    const position = this.shadowRoot.querySelector('input[name="position"]').value;
-    const raceId = this.getAttribute('raceId');
-    console.log('pid', particpantId, 'position', position, 'raceId', raceId);
+  async handleClick() {
+    const participantId = this.shadowRoot.querySelector('input[name="pid"]').value.trim();
+    const position = parseInt(this.shadowRoot.querySelector('input[name="position"]').value, 10);
+    const raceId = new URLSearchParams(window.location.search).get('id');
+
+    if (!participantId || !raceId || isNaN(position)) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`http://localhost:8080/api/race/${raceId}/check-out`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          participant_id: participantId,
+          finish_position: position,
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err);
+      }
+    } catch (error) {
+    }
   }
 }
 

@@ -1,1 +1,1 @@
-<span>view</span>
+<viewer-view></view-view>

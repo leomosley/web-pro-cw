@@ -1,4 +1,4 @@
-import { calculateElapsedTime, formatTime } from '../../lib/utils.mjs';
+import { calculateElapsedTime } from '../../lib/utils.mjs';
 
 class RaceTimer extends HTMLElement {
   constructor() {
@@ -29,7 +29,6 @@ class RaceTimer extends HTMLElement {
       const newIsRunning = newValue === 'true';
       if (newIsRunning !== this.isRunning) {
         this.isRunning = newIsRunning;
-        console.log('Timer: Updated isRunning:', this.isRunning);
         this.restartTimer();
       }
     }
@@ -43,9 +42,6 @@ class RaceTimer extends HTMLElement {
     this.stopTimer();
   }
 
-  render() {
-    this.shadowRoot.innerHTML = '<span>00:00:00</span>';
-  }
 
   startTimer() {
     if (!this.isRunning || this.timerInterval || this.startTime === null || isNaN(this.startTime)) {
@@ -82,6 +78,16 @@ class RaceTimer extends HTMLElement {
     if (timerDisplay) {
       timerDisplay.textContent = timeString;
     }
+  }
+
+  render() {
+    this.shadowRoot.innerHTML = `
+      <style>
+        span {
+          font-size: 3rem;
+        }
+      </style>`;
+    this.shadowRoot.innerHTML += '<span>00:00:00</span>';
   }
 }
 

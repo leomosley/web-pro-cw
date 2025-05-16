@@ -1,5 +1,5 @@
+import { templates } from '../../index.mjs';
 import { userStore } from '../../lib/auth.mjs';
-import { localStore } from '../../lib/localStore.mjs';
 import { navigate, readPath } from '../../lib/views.mjs';
 
 class SignInView extends HTMLElement {
@@ -9,7 +9,7 @@ class SignInView extends HTMLElement {
     this.user = null;
 
     this.handleUserChange = this.handleUserChange.bind(this);
-    this.handleSignIn = this.handleSignIn.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
   }
 
   connectedCallback() {
@@ -26,7 +26,9 @@ class SignInView extends HTMLElement {
   }
 
   disconnectedCallback() {
-    if (this.unsubscribe) this.unsubscribe();
+    if (this.unsubscribe) {
+      this.unsubscribe();
+    }
   }
 
   handleUserChange(newUserValue) {
@@ -39,8 +41,8 @@ class SignInView extends HTMLElement {
     }
   }
 
-  handleSignIn(event) {
-    localStore.setItem('user', {
+  handleSubmit() {
+    userStore.set({
       id: 1,
     });
   }
@@ -49,35 +51,12 @@ class SignInView extends HTMLElement {
     this.shadowRoot.innerHTML = '';
 
     if (!this.user) {
-      const form = [
-        { label: 'Email', type: 'email', name: 'email' },
-        { label: 'Password', type: 'password', name: 'password' },
-      ];
+      this.shadowRoot.append(templates.signInView.content.cloneNode(true));
 
-      for (const field of form) {
-        const label = document.createElement('label');
-        label.textContent = field.label;
-
-        const input = document.createElement('input');
-        input.type = field.type;
-        input.name = field.name;
-        input.required = true;
-
-        label.appendChild(input);
-        this.shadowRoot.appendChild(label);
-      }
-
-      const signInButton = document.createElement('button');
-      signInButton.addEventListener('click', this.handleSignIn.bind(this));
-      signInButton.textContent = 'Sign In';
-
-      this.shadowRoot.appendChild(signInButton);
-
-      const signUpButton = document.createElement('button');
-      signUpButton.addEventListener('click', () => navigate('sign-up'));
-      signUpButton.textContent = 'Sign Up';
-
-      this.shadowRoot.appendChild(signUpButton);
+      const button = this.shadowRoot.querySelector('button');
+      button.addEventListener('click', this.handleSubmit.bind(this));
+    } else {
+      this.shadowRoot.innerHTML = '<p>You are already signed in.</p>';
     }
   }
 }

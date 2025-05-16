@@ -19,18 +19,21 @@ async function main() {
     root: path.join(__dirname, 'client'),
   });
 
-  app.get('/', async (request, reply) => {
+  app.get('/', (request, reply) => {
     return reply.redirect('/app/');
   });
 
-  app.get('/app', async (request, reply) => {
+  app.get('/app', (request, reply) => {
     return reply.redirect('/app/');
   });
 
-  app.get('/app/*', async (request, reply) => {
+  app.get('/app/*', (request, reply) => {
     return reply.sendFile('index.html');
   });
 
+
+  // All API routes are defined in `api/routes`
+  // The following code uses the `createAPIRoute` function to register these routes with the app
   for (const route of routes) {
     createAPIRoute(app, route);
   }
